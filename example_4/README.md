@@ -1,16 +1,16 @@
-# Example 4 - Ovladanie SSD displeja
+# Example 4 - Ovládanie SSD displeja
 
-Ciel: zobrazit text na OLED/SSD1306 displeji cez I2C.
+Cieľ: zobraziť text na OLED/SSD1306 displeji cez I2C.
 
-## Zapojenie (podla schemy)
+## Zapojenie (podľa schémy)
 
 - SDA: IO1
 - SCL: IO2
-- Napajanie: 3V3 a GND
+- Napájanie: 3V3 a GND
 
 ## Spustenie
 
-1. Nahraj subor `main.py` do dosky.
+1. Nahraj súbor `main.py` do dosky.
 2. Spusti program.
-3. Do konzoly pis text, ktory sa ma zobrazit na displeji.
-4. Pre koniec napis `exit`.
+3. Do konzoly píš text, ktorý sa má zobraziť na displeji.
+4. Pre koniec napíš `exit`.

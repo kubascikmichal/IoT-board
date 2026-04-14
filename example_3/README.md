@@ -1,10 +1,10 @@
 # Example 3 - RGB LED s PWM
 
-Ovladanie RGB LED s nastavenim jasu (0 az 1023) pre kazdu farbu.
+Ovládanie RGB LED s nastavením jasu (0 až 1023) pre každú farbu.
 
-## Poznamka
+## Poznámka
 
-Piny su nastavene podla mapovania v scheme:
+Piny sú nastavené podľa mapovania v schéme:
 - `R_PIN = 7`
 - `G_PIN = 5`
 - `B_PIN = 3`

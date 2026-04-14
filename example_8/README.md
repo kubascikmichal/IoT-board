@@ -1,13 +1,13 @@
-# Example 8 - Citanie DHT a zobrazovanie v konzole
+# Example 8 - Čítanie DHT a zobrazovanie v konzole
 
-Ciel: citat teplotu a vlhkost zo senzora DHT a pravidelne ich vypisovat.
+Cieľ: čítať teplotu a vlhkosť zo senzora DHT a pravidelne ich vypisovať.
 
-## Zapojenie (podla schemy)
+## Zapojenie (podľa schémy)
 
 - DHT data pin: IO18 (`DHT_DATA`)
 
 ## Spustenie
 
-1. Nahraj subor `main.py` do dosky.
+1. Nahraj súbor `main.py` do dosky.
 2. Sleduj hodnoty v konzole.
-3. Program meria kazde 2 sekundy.
+3. Program meria každé 2 sekundy.

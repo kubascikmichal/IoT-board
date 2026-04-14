@@ -1,10 +1,10 @@
 # Example 2 - RGB LED bez PWM
 
-Ovladanie RGB LED cez textovy vstup. LED svieti iba zapnute/vypnute (0 alebo 1).
+Ovládanie RGB LED cez textový vstup. LED svieti iba zapnuté/vypnuté (0 alebo 1).
 
-## Poznamka
+## Poznámka
 
-Piny su nastavene podla mapovania v schem e:
+Piny sú nastavené podľa mapovania v schéme:
 - `R_PIN = 7`
 - `G_PIN = 5`
 - `B_PIN = 3`

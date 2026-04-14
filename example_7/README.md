@@ -1,19 +1,19 @@
-# Example 7 - Citanie a aproximacia fotorezistora (min-max)
+# Example 7 - Čítanie a aproximácia fotorezistora (min-max)
 
-Ciel: nacitat analogovu hodnotu z fotorezistora a prepocitat ju na percenta.
+Cieľ: načítať analógovú hodnotu z fotorezistora a prepočítať ju na percentá.
 
-## Zapojenie (podla schemy)
+## Zapojenie (podľa schémy)
 
 - Fotorezistor vstup: IO16 (`PHOTO`)
 
-## Ako funguje aproximacia
+## Ako funguje aproximácia
 
-1. Program nazbiera viac merani.
-2. Najde minimalnu a maximalnu hodnotu.
-3. Aktualnu hodnotu prepocita na 0-100 percent.
+1. Program nazbiera viac meraní.
+2. Nájde minimálnu a maximálnu hodnotu.
+3. Aktuálnu hodnotu prepočíta na 0-100 percent.
 
 ## Spustenie
 
-1. Nahraj subor `main.py` do dosky.
-2. Sleduj vypis v konzole.
-3. Men svetlo nad fotorezistorom a pozoruj percenta.
+1. Nahraj súbor `main.py` do dosky.
+2. Sleduj výpis v konzole.
+3. Meň svetlo nad fotorezistorom a pozoruj percentá.

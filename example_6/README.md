@@ -1,13 +1,13 @@
-# Example 6 - Pouzitie PWM na bzuciak
+# Example 6 - Použitie PWM na bzučiak
 
-Ciel: prehrat jednoduchy ton a kratku melodiu cez PWM.
+Cieľ: prehrať jednoduchý tón a krátku melódiu cez PWM.
 
-## Zapojenie (podla schemy)
+## Zapojenie (podľa schémy)
 
-- Bzuciak pin: IO11 (`BUZZER_PIN`)
+- Bzučiak pin: IO11 (`BUZZER_PIN`)
 
 ## Spustenie
 
-1. Nahraj subor `main.py` do dosky.
-2. V konzole zadaj frekvenciu (napr. `1000`) alebo prikaz `melody`.
-3. Pre koniec napis `exit`.
+1. Nahraj súbor `main.py` do dosky.
+2. V konzole zadaj frekvenciu (napr. `1000`) alebo príkaz `melody`.
+3. Pre koniec napíš `exit`.

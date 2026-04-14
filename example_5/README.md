@@ -1,15 +1,15 @@
-# Example 5 - Ovladanie seriovych RGB LED
+# Example 5 - Ovládanie sériových RGB LED
 
-Ciel: ovladat retazec WS2812B LED (Neopixel) cez datovy pin.
+Cieľ: ovládať reťazec WS2812B LED (Neopixel) cez dátový pin.
 
-## Zapojenie (podla schemy)
+## Zapojenie (podľa schémy)
 
-- Data pin LED retazca: IO4 (`LED_PIN`)
+- Dátový pin LED reťazca: IO4 (`LED_PIN`)
 
 ## Spustenie
 
-1. Nahraj subor `main.py` do dosky.
-2. V konzole zadavaj prikazy:
+1. Nahraj súbor `main.py` do dosky.
+2. V konzole zadávaj príkazy:
    - `red`, `green`, `blue`, `white`, `off`
-   - `rainbow` pre jednoduchy efekt
+   - `rainbow` pre jednoduchý efekt
    - `exit` pre koniec programu

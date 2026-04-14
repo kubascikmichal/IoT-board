@@ -1,6 +1,6 @@
-# Example 1 - Hadanie cisla
+# Example 1 - Hádanie čísla
 
-Jednoducha konzolova hra: program si vyberie nahodne cislo a uzivatel hada.
+Jednoduchá konzolová hra: program si vyberie náhodné číslo a používateľ háda.
 
 ## Spustenie
 
