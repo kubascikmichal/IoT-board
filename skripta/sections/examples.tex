@@ -1,40 +1,447 @@
-\section{Príklady a zdrojové kódy}
+\section{Príklady podľa zadania}
 
-Nižšie sú vložené zdrojové súbory z priečinkov `example_*` s krátkym popisom. Všetky sú vložené pomocou `\lstinputlisting`.
+V tejto kapitole sú príklady popísané sekvenčne po logických blokoch. Pri každej ukážke najprv stručne popíšem cieľ a motív riešenia, potom rozoberiem jednotlivé kroky, na ktoré treba pri implementácii dbať, a nakoniec uvádzam skrátený kódový výrez v poradí, v akom sa program číta. Texty obsahujú poznámky o možných chybách, predpokladoch o zapojení a návrhoch, ako daný blok rozšíriť.
 
-\subsection*{Example 0}
-Popis: základný "Hello world" alebo inicializácia.
-\lstinputlisting[language=Python,caption={example_0/main.py}]{../example_0/main.py}
+\section{Servisný test dosky}
+Tento príklad slúži ako rýchly self-test po flashnutí zariadenia. Cieľom je overiť základné periférie (displej, LED, senzory, tlačidlá, bzučiak) a získať rýchlu spätnú väzbu o tom, či sú piny a moduly správne zapojené. V texte uvádzam, ktoré merania sú deterministické (napr. ADC čítanie) a ktoré závisia na externých podmienkach (napr. svetelnosť), ako aj tipy na ladenie (kontrola napájania, sériový výstup, jednoduché multimeter kontroly).
 
-\subsection*{Example 1}
-\lstinputlisting[language=Python,caption={example_1/main.py}]{../example_1/main.py}
+\subsection*{Mapovanie pinov a zber výsledkov}
+Najprv si nadefinujem piny, ktoré program používa, aby bolo jednoduché upraviť zapojenie podľa konkrétnej dosky. Zoznam \lstinline|results| slúži ako jednotný formát pre neskoršie zobrazenie výsledkov a uľahčuje rozšírenie testov alebo odoslanie reportu cez sériový port.
+\begin{lstlisting}[language=Python]
+from machine import Pin, PWM, I2C, ADC
+import time
 
-\subsection*{Example 2}
-\lstinputlisting[language=Python,caption={example_2/main.py}]{../example_2/main.py}
+PIN_I2C_SDA = 1
+PIN_I2C_SCL = 2
+PIN_RGB_R = 7
+PIN_RGB_G = 5
+PIN_RGB_B = 3
+results = []
+\end{lstlisting}
 
-\subsection*{Example 3}
-\lstinputlisting[language=Python,caption={example_3/main.py}]{../example_3/main.py}
+\subsection*{Pomocné funkcie pre výsledky}
+Pomocné funkcie izolujú opakujúcu sa logiku: \texttt{add\_result()} formátuje a ukladá výsledok testu (názov, stav, poznámka), čo zjednoduší tlač správy alebo export. \texttt{ask\_yes\_no()} sa používa na manuálne overenie vizuálnych komponentov (napr. či OLED skutočne zobrazuje text) a ukážem, prečo je vhodné mať takýto blok oddelene pre jednoduché testovanie.
+\begin{lstlisting}[language=Python]
+def add_result(name, ok, note=""):
+	state = "PASS" if ok else "FAIL"
+	results.append((name, state, note))
 
-\subsection*{Example 4}
-\lstinputlisting[language=Python,caption={example_4/main.py}]{../example_4/main.py}
+def ask_yes_no(question):
+	while True:
+		ans = input(question + " [y/n]: ").strip().lower()
+		if ans in ("y", "yes", "a", "ano"):
+			return True
+		if ans in ("n", "no", "nie"):
+			return False
+\end{lstlisting}
 
-\subsection*{Example 5}
-\lstinputlisting[language=Python,caption={example_5/main.py}]{../example_5/main.py}
+\subsection*{Test OLED, RGB LED a WS2812}
+V tejto časti sa zameriame na vizuálnu spätnú väzbu: krátky text na OLED potvrdí komunikáciu po I2C, diskrétna RGB LED overí základnú logiku výstupov a WS2812 reťazec demonštruje adresovateľné LED a správne časovanie dátového signálu. Poznámka: pri WS2812 je kritické správne napájanie a dostatočné časovanie; v texte spomínam ako testovať po jednom pixeli a na čo si dávať pozor pri viacnásobnom píne.
+\begin{lstlisting}[language=Python]
+def test_oled():
+	i2c = I2C(0, sda=Pin(PIN_I2C_SDA), scl=Pin(PIN_I2C_SCL), freq=400000)
+	oled = ssd1306.SSD1306_I2C(128, 64, i2c)
+	oled.text("SELF TEST", 0, 12)
+	oled.show()
 
-\subsection*{Example 6}
-\lstinputlisting[language=Python,caption={example_6/main.py}]{../example_6/main.py}
+def test_rgb_discrete():
+	r = Pin(PIN_RGB_R, Pin.OUT)
+	g = Pin(PIN_RGB_G, Pin.OUT)
+	b = Pin(PIN_RGB_B, Pin.OUT)
 
-\subsection*{Example 7}
-\lstinputlisting[language=Python,caption={example_7/main.py}]{../example_7/main.py}
+def test_ws2812():
+	np = neopixel.NeoPixel(Pin(PIN_LED_DATA), WS2812_COUNT)
+	np[0] = (255, 0, 0)
+	np.write()
+\end{lstlisting}
 
-\subsection*{Example 8}
-\lstinputlisting[language=Python,caption={example_8/main.py}]{../example_8/main.py}
+\subsection*{Test bzučiaka, tlačidiel, fotorezistora a DHT}
+Tu prichádzajú testy, ktoré zahŕňajú časovanie (bzučiak), čítanie digitálnych vstupov (tlačidlá), analógové meranie (fotorezistor cez ADC) a sekvenčné meranie (DHT senzor). V texte popisujem očakávané rozsahy hodnôt, ako si nastaviť debounce pre tlačidlá a prečo pri DHT senzore potrebujeme čakať medzi meraniami.
+\begin{lstlisting}[language=Python]
+def test_buzzer():
+	bz = PWM(Pin(PIN_BUZZER), freq=1000, duty=0)
+	for f in (523, 659, 784):
+		bz.freq(f)
+		bz.duty(512)
 
-\subsection*{Example 9}
-\lstinputlisting[language=Python,caption={example_9/main.py}]{../example_9/main.py}
+def test_buttons():
+	buttons = [("USR1", Pin(PIN_BTN_1, Pin.IN)), ...]
 
-\subsection*{Example 10}
-\lstinputlisting[language=Python,caption={example_10/main.py}]{../example_10/main.py}
+def test_photo():
+	adc = ADC(Pin(PIN_PHOTO))
+	v = adc.read()
 
-\subsection*{Example 11}
-\lstinputlisting[language=Python,caption={example_11/main.py}]{../example_11/main.py}
+def test_dht():
+	sensor = dht.DHT22(Pin(PIN_DHT))
+	sensor.measure()
+\end{lstlisting}
+
+\subsection*{Spustenie testov a súhrn}
+V hlavnej časti je cyklus, ktorý postupne vykoná jednotlivé testy a zapíše výsledky do `results`. Toto miesto je ideálne na doplnenie logovania do súboru alebo na odosielanie výsledkov cez sériový port/HTTP. V texte tiež navrhujem, ako pridať timeouty a opätovné pokusy pre nestabilné periférie.
+\begin{lstlisting}[language=Python]
+for fn in (test_oled, test_rgb_discrete, test_ws2812,
+		   test_buzzer, test_buttons, test_photo, test_dht):
+	fn()
+
+print("=== SUMAR ===")
+for name, state, note in results:
+	print(name, state, note)
+\end{lstlisting}
+
+\clearpage
+\section{Interakcia s tlačidlami: hra hádania}
+Tento príklad demonštruje praktické použitie tlačidiel ako vstupu pre jednoduchú hru, pričom sa rieši detekcia stlačení, tvorba pseudo-náhody z kombinácie stlačení a spätná väzba užívateľovi. V texte uvádzam, ako spracovať bouncing, prečo nie je vhodné použiť ťažký výpočet v IRQ a ako testovať, či sú piny správne preradené.
+
+\subsection*{Tlačidlá a základné konštanty}
+V tejto fáze priradíme fyzické piny k logickým menám, čo zvyšuje čitateľnosť kódu a uľahčuje zmenu zapojenia. Tiež vysvetľujem, kedy treba aktivovať vnútorné pull-up alebo pull-down rezistory a čo očakávať, keď je logická úroveň invertovaná (závisí to od zapojenia tlačidla).
+\begin{lstlisting}[language=Python]
+from machine import Pin
+import time
+
+BTN1 = Pin(39, Pin.IN)
+BTN2 = Pin(37, Pin.IN)
+BTN3 = Pin(35, Pin.IN)
+BTN4 = Pin(33, Pin.IN)
+\end{lstlisting}
+
+\subsection*{Generovanie náhodného čísla z tlačidiel}
+Tento jednoduchý spôsob generovania náhody čerpá entropiu zo stavu tlačidiel pri štarte (alebo z počtu stlačení). Vysvetlím, prečo to postačuje pre jednoduchú hru, ale nie je vhodné pre kryptografické účely, a ako by sa dalo rozšíriť o ďalšie zdroje náhody (ADC šum, čas medzi stlačeniami).
+\begin{lstlisting}[language=Python]
+def get_seed():
+	seed = 0
+	if BTN1.value() == 0:
+		seed += 1
+	if BTN2.value() == 0:
+		seed += 2
+	return seed
+\end{lstlisting}
+
+\subsection*{Herný cyklus}
+V hlavnej slučke program číta vstup od používateľa, porovnáva ho s tajným číslom a dáva priebežnú spätnú väzbu. Popisujem možnosti, ako pridať časový limit, skórovací systém alebo vizuálnu odozvu cez LED, a tiež navrhujem, ako spraviť vstup robustnejším (validácia, ošetrenie chýbného vstupu).
+\begin{lstlisting}[language=Python]
+while True:
+	guess = int(input("Tipni cislo 1-4: "))
+	if guess == secret:
+		print("Spravne")
+		break
+	print("Skus znova")
+\end{lstlisting}
+
+\clearpage
+\section{Digitálne riadenie RGB LED}
+Ukážka ukazuje najzákladnejší prístup k ovládaniu farieb pomocou samostatných digitálnych výstupov. Vysvetľujem, kedy je tento režim dostačujúci (indikácia stavov) a kedy treba použiť PWM pre plynulé ladenie jasu.
+
+\subsection*{Digitálne výstupy RGB LED}
+\begin{lstlisting}[language=Python]
+from machine import Pin
+import time
+
+red = Pin(7, Pin.OUT)
+green = Pin(5, Pin.OUT)
+blue = Pin(3, Pin.OUT)
+\end{lstlisting}
+
+\subsection*{Postupné prepínanie farieb}
+Tento jednoduchý cyklus demonštruje, ako kombinovať kanály pre základné farby. Upozorňujem na potrebu dobrého riadenia prúdového limitu a na to, že pri viacerých kanáloch sú súčty prúdov dôležité pre napájanie dosky.
+\begin{lstlisting}[language=Python]
+while True:
+	red.value(1)
+	green.value(0)
+	blue.value(0)
+	time.sleep(0.3)
+\end{lstlisting}
+
+\clearpage
+\section{PWM riadenie jasu RGB LED}
+V tejto kapitole prechádzame k jemnejšiemu ovládaniu pomocou PWM. Vysvetlím vzťah medzi frekvenciou PWM a flicker-om, typické rozsahy pre ESP32 a dôvody, prečo mať rovnomerné rozdelenie časových kvant pre jednotlivé kanály.
+
+\subsection*{PWM kanály pre RGB LED}
+Každá farba má vlastný PWM kanál.
+\begin{lstlisting}[language=Python]
+from machine import Pin, PWM
+
+r = PWM(Pin(7), freq=1000)
+g = PWM(Pin(5), freq=1000)
+b = PWM(Pin(3), freq=1000)
+\end{lstlisting}
+
+\subsection*{Nastavenie hodnôt jasu}
+Funkcia prijíma hodnoty jasu v očakávanom intervale a mapuje ich na duty cycle PWM. Popíšem konverziu rozsahov (napr. 0–255 na 0–1023) a tipy, ako zabrániť preťaženiu GPIO pri náhlom zvýšení jasu.
+\begin{lstlisting}[language=Python]
+def set_rgb(r_val, g_val, b_val):
+	r.duty(r_val)
+	g.duty(g_val)
+	b.duty(b_val)
+\end{lstlisting}
+
+\clearpage
+\section{Prerušenia a meranie dĺžky stlačenia}
+Ukážka ilustruje použitie prerušení (IRQ) na efektívnu detekciu stlačenia bez náročného polling-u v hlavnej slučke. V texte rozoberiem debounce stratégie, bezpečnosť pri práci s globálnymi premennými v IRQ kontexte a prečo by sa v obsluhe prerušení nemali volať pomalé funkcie.
+
+\subsection*{Stav a časovanie pre IRQ}
+\begin{lstlisting}[language=Python]
+from machine import Pin, I2C
+import time
+
+press_started = None
+last_duration = 0
+\end{lstlisting}
+
+\subsection*{IRQ obsluha s debounce}
+IRQ handler by mal byť krátky: iba zaznamenať čas začiatku alebo konca stlačenia a nastaviť príznak. Vysvetlím, ako merať čas pomocou \texttt{time.ticks\_ms()} a prečo je bezpečnejšie spracovať dĺžku tlačenia v hlavnej slučke, nie priamo v handleri.
+\begin{lstlisting}[language=Python]
+def make_irq_handler(name):
+	def handler(pin):
+		global press_started, last_duration
+		if pin.value() == 0:
+			press_started = time.ticks_ms()
+		else:
+			last_duration = time.ticks_diff(time.ticks_ms(), press_started)
+	return handler
+\end{lstlisting}
+
+\subsection*{Pripojenie handlerov na tlačidlá}
+\begin{lstlisting}[language=Python]
+btn1 = Pin(39, Pin.IN)
+btn1.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING,
+		 handler=make_irq_handler("USR1"))
+\end{lstlisting}
+
+\subsection*{Zobrazenie posledného stlačenia}
+Program priebežne ukazuje poslednú nameranú dĺžku stlačenia.
+\begin{lstlisting}[language=Python]
+while True:
+	print("Posledne stlacenie:", last_duration, "ms")
+	time.sleep(0.2)
+\end{lstlisting}
+
+\clearpage
+\section{Sériové LED WS2812B}
+Adresovateľný LED pásik (WS2812B) ilustruje protokol, kde sú dáta odosielané v presných časových oknách. Popíšem obmedzenia prenosu, potrebu presného nastavenia času a rady na napájanie viacerých pixelov (spoločná zem, kapacitné vyhladenie napätia).
+
+\subsection*{NeoPixel objekt pre WS2812B}
+\begin{lstlisting}[language=Python]
+from machine import Pin
+import neopixel
+
+np = neopixel.NeoPixel(Pin(4), 12)
+\end{lstlisting}
+
+\subsection*{Nastavenie farieb}
+Vysvetlím, ako funguje buffer pixelov a prečo je dôležité volať \texttt{np.write()} až po nastavení všetkých hodnôt. Spomeniem tiež, že niektoré implementácie vyžadujú kratšie oneskorenia pred a po zápise dát.
+\begin{lstlisting}[language=Python]
+def set_all(color):
+	for i in range(12):
+		np[i] = color
+	np.write()
+\end{lstlisting}
+
+\clearpage
+\section{PWM bzučiak a krátka melódia}
+Ukážka demonštruje generovanie tónov pomocou PWM, kde sa mení frekvencia namiesto duty-cyklu. Popisujem, ako nastaviť vhodnú duty pre čistý tón, prečo by sa nemal používať maximálny výkon nepretržite a ako zložiť jednoduchú melódiu bez externých knižníc.
+
+\subsection*{PWM výstup pre bzučiak}
+\begin{lstlisting}[language=Python]
+from machine import Pin, PWM
+import time
+
+buzzer = PWM(Pin(11), freq=1000, duty=0)
+\end{lstlisting}
+
+\subsection*{Funkcia na prehratie tónu}
+Funkcia nastaví frekvenciu a krátko aktivuje výstup. V poznámke uvádzam, že pri dlhých tónoch je vhodné znižovať duty alebo vložiť malé prestávky, aby sa zabránilo prehrievaniu aktívneho bzučiaka.
+
+\subsection*{Krátka melódia}
+\begin{lstlisting}[language=Python]
+for note in (523, 659, 784):
+	beep(note, 180)
+	time.sleep_ms(60)
+\end{lstlisting}
+
+\clearpage
+\section{Analógové meranie svetla}
+V tejto kapitole popisujem meranie odporu fotorezistoru cez ADC a postup kalibrácie, ktorý zabezpečí zmysluplné percentuálne hodnoty v rôznych svetelných podmienkach. Upozorním na offsety ADC, potrebu filtrovania a ako zmerať minimálne a maximálne hodnoty prakticky.
+
+\subsection*{Inicializácia ADC}
+\begin{lstlisting}[language=Python]
+from machine import Pin, ADC
+
+
+adc.atten(ADC.ATTN_11DB)
+\end{lstlisting}
+
+\subsection*{Kalibrácia minima a maxima}
+Kalibrácia spočíva v pokrývaní extrémov (tma vs. silné svetlo) a zapísaní týchto hodnôt, ktoré sa potom použijú na normalizáciu vstupu. V texte dávam tipy, ako vykonať viacnásobné merania a použiť klzavý priemer pre stabilnejší výsledok.
+\begin{lstlisting}[language=Python]
+min_v = 65535
+max_v = 0
+v = adc.read()
+\end{lstlisting}
+
+\subsection*{Prepočet na percentá}
+Normalizácia spraví z ADC čísla ľahšie čitateľný výstup.
+\begin{lstlisting}[language=Python]
+def normalize(value, min_v, max_v):
+	span = max_v - min_v
+	return int((value - min_v) * 100 / span)
+\end{lstlisting}
+
+\clearpage
+\section{Senzor DHT: teplota a vlhkosť}
+Krátka, ucelená ukážka načítania teploty a vlhkosti zo senzora DHT. Okrem základného princípu merania popisujem časové obmedzenia medzi meraniami a prípadné chyby pri čítaní, ktoré treba ošetriť (timeouty, chybové kódy).
+
+\begin{lstlisting}[language=Python]
+from machine import Pin
+import dht
+import time
+
+sensor = dht.DHT22(Pin(18))
+
+while True:
+	sensor.measure()
+	print(sensor.temperature(), sensor.humidity())
+	time.sleep(2)
+\end{lstlisting}
+
+\clearpage
+\section{Wi-Fi prístupový bod a webové ovládanie}
+Tento príklad prepája lokálne periférie s jednoduchým webovým rozhraním cez vlastný access point. Popisujem architektúru: inicializácia periférií, tvorba HTML rozhrania pre ovládanie, bezpečnostné a spoľahlivé spracovanie požiadaviek, a návrhy na rozšírenie (autentifikácia, stavové stránky, AJAX pre aktualizácie bez reloadu).
+
+\subsection*{1. Pripravím periférie a fallbacky}
+V tejto časti sa oboznámime so spôsobom, ako robustne inicializovať periférie: najprv skúsiť importovať voliteľné moduly a v prípade chýb poskytnúť fallback (napr. simulované čítania). Uvádzam príklady, čo robiť, keď senzor nie je prítomný, aby server neskončil s chybou.
+\begin{lstlisting}[language=Python]
+import socket, time, network
+from machine import Pin, PWM, I2C
+
+try:
+	import dht
+except ImportError:
+	dht = None
+\end{lstlisting}
+
+\subsection*{2. Vytvorím pomocné funkcie pre výstupy}
+	Oddelené funkcie pre ovládanie výstupov zlepšujú čitateľnosť a uľahčujú viazanie rozhrania (mapovanie tlačidiel na akcie). Vysvetlím, ako mať čisté API pre zmenu stavu (napr. \lstinline|set_rgb(name)|) a prečo je dobré mať centrálny stav zariadenia, ktorý HTML stránka vie prečítať.
+\begin{lstlisting}[language=Python]
+def set_rgb(name):
+	colors = {"red": (1, 0, 0), "green": (0, 1, 0), "off": (0, 0, 0)}
+	r, g, b = colors.get(name, (0, 0, 0))
+	red.value(r)
+	green.value(g)
+	blue.value(b)
+\end{lstlisting}
+
+\subsection*{3. Vygenerujem HTML stránku}
+HTML stránka je minimalná a slúži na demonštráciu ovládania: tlačidlá odosielajú query parametre a stránka zobrazuje aktuálne merania. Uvádzam, ako zaradiť CSRF bezpečnosť minimalizovaným spôsobom (jednorazové tokeny) a ako vylepšiť používateľské rozhranie jednoduchým CSS/JS.
+\begin{lstlisting}[language=Python]
+def html_page(temp, hum):
+	return """<!doctype html>
+	<html>
+	<body>
+	<a href='/?rgb=red'>Red</a>
+	<a href='/?buzz=1'>Pipni</a>
+	</body></html>"""
+\end{lstlisting}
+
+\subsection*{4. Spustím access point}
+Spustenie AP modeluje režim, keď zariadenie poskytuje vlastnú sieť bez potreby existujúcej infraštruktúry. Popisujem, kedy je vhodné AP vs. STA režim, ako nastaviť jednoduché heslo a čo očakávať pri obmedzenom dosahu/kanálových konfliktoch.
+\begin{lstlisting}[language=Python]
+def start_ap():
+	ap = network.WLAN(network.AP_IF)
+	ap.active(True)
+	ap.config(essid=AP_SSID, password=AP_PASSWORD, authmode=3)
+\end{lstlisting}
+
+\subsection*{5. Obslúžim HTTP požiadavky}
+Server prijíma jednoduché GET požiadavky a na základe parametrov vykonáva akcie (zapnúť LED, prehriať bzučiak). Upozorňujem na potrebu parsovania a validácie parametrov, správnu uzávierku soketov a na to, že server by mal byť tolerantný k neúplným požiadavkám.
+\begin{lstlisting}[language=Python]
+while True:
+	conn, _ = s.accept()
+	req = conn.recv(1024)
+	if "rgb" in q:
+		set_rgb(q["rgb"])
+	if q.get("buzz") == "1":
+		buzz()
+\end{lstlisting}
+
+\clearpage
+\section{Odosielanie dát do ThingSpeak}
+Praktický príklad integrácie so vzdialenou cloudovou službou. Popisujem, ako efektívne bufferovať merania, zaist uistiť opakované odosielanie pri výpadkoch siete a minimalizovať spotrebu energie pri pravidelnom odosielaní dát.
+
+\subsection*{1. Pripravím Wi-Fi a senzor}
+\begin{lstlisting}[language=Python]
+import network, time, urequests
+from machine import Pin
+import dht
+
+sensor = dht.DHT22(Pin(18))
+\end{lstlisting}
+
+\subsection*{2. Pripojím sa do siete}
+Keď sa Wi-Fi pripojenie nepodarí, program to vie zistiť a skúsiť znova.
+\begin{lstlisting}[language=Python]
+def wifi_connect():
+	wlan = network.WLAN(network.STA_IF)
+	wlan.active(True)
+	wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+\end{lstlisting}
+
+\subsection*{3. Načítam hodnoty a pošlem ich}
+ThingSpeak očakáva jednoduchý HTTP request s parametrami kanála.
+\begin{lstlisting}[language=Python]
+def thingspeak_update(temp, hum):
+	url = THINGSPEAK_URL + "?field1=%s&field2=%s" % (temp, hum)
+	urequests.get(url).close()
+\end{lstlisting}
+
+\subsection*{4. Opakujem cyklus v hlavnej slučke}
+\begin{lstlisting}[language=Python]
+while True:
+	sensor.measure()
+	thingspeak_update(sensor.temperature(), sensor.humidity())
+	time.sleep(20)
+\end{lstlisting}
+
+\clearpage
+\section{MQTT publish/subscribe komunikácia}
+MQTT je vhodný tam, kde zariadenie musí nielen odosielať dáta, ale aj prijímať príkazy. Tento príklad ukazuje oba smery komunikácie.
+
+\subsection*{1. Pripravím Wi-Fi a MQTT konfiguráciu}
+\begin{lstlisting}[language=Python]
+import network, time
+from umqtt.simple import MQTTClient
+
+CLIENT_ID = b"iotstich-01"
+MQTT_BROKER = b"test.mosquitto.org"
+TOPIC_PUB = b"iotstich/telemetry"
+TOPIC_SUB = b"iotstich/cmd"
+\end{lstlisting}
+
+\subsection*{2. Pripojím sa do Wi-Fi}
+\begin{lstlisting}[language=Python]
+def wifi_connect():
+	wlan = network.WLAN(network.STA_IF)
+	wlan.active(True)
+	wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+\end{lstlisting}
+
+\subsection*{3. Definujem MQTT callback}
+Callback reaguje na prichádzajúce správy a vie podľa nich zmeniť stav dosky.
+\begin{lstlisting}[language=Python]
+def on_message(topic, msg):
+	print(topic, msg)
+	if msg == b"ping":
+		print("pong")
+\end{lstlisting}
+
+\subsection*{4. Publikujem telemetriu v hlavnej slučke}
+\begin{lstlisting}[language=Python]
+client = MQTTClient(CLIENT_ID, MQTT_BROKER)
+client.set_callback(on_message)
+client.connect()
+client.subscribe(TOPIC_SUB)
+
+while True:
+	client.publish(TOPIC_PUB, b"25.4,60.1")
+	client.check_msg()
+	time.sleep(10)
+\end{lstlisting}

@@ -1,17 +1,57 @@
 \section{MicroPython pre vstavané systémy}
+\label{sec:micropython}
 
-MicroPython je zjednodušená implementácia Pythonu určená pre mikrokontroléry. Poskytuje rýchly vývoj a čitateľný kód priamo na zariadení.
+MicroPython je odľahčená implementácia jazyka Python určená pre mikrokontroléry. Jeho cieľom je ponúknuť čitateľnú syntax, rýchle prototypovanie a jednoduchú prácu s perifériami aj priamo na zariadení. V projektoch s ESP32 je veľmi vhodný na výučbu, experimentovanie aj menšie IoT prototypy.
+
+\subsection*{Inštalácia cez Thonny}
+Pre začiatočníkov a pri rýchlom nasadzovaní odporúčame použiť grafické rozhranie Thonny, ktoré obsahuje jednoduchý nástroj na nahranie MicroPython firmvéru a prácu so sériovou konzolou.
+
+Postup (stručne):
+\begin{enumerate}
+\item Stiahnite a nainštalujte Thonny z \url{https://thonny.org} pre váš operačný systém.
+\item Pripojte ESP32 k počítaču cez USB a spustite Thonny.
+\item V Thonny prejdite do \texttt{Tools → Options → Interpreter} a v poli \texttt{Interpreter} vyberte \texttt{MicroPython (ESP32)}.
+\item Vyberte správny \texttt{Port} (napr. \texttt{/dev/ttyUSB0} alebo COM port na Windows).
+\item Kliknite na tlačidlo \texttt{Install or update firmware} (v niektorých verziách cez menu za možnosťou výberu interpretera). Vyberte odporúčanú verziu firmvéru alebo zadajte cestu k stiahnutému \texttt{.bin} súboru.
+\item Potvrďte nahratie; Thonny vykoná potrebné kroky (erase + write) a po skončení otvorí REPL.
+\end{enumerate}
+
+Thonny tiež poskytuje jednoduchý editor a možnosť nahrávať súbory priamo na zariadenie (Save → Device). To zefektívňuje prototypovanie, pretože po uložení \texttt{main.py} zariadenie automaticky spustí upravený kód po reštarte.
+
+\subsection*{Základná syntax}
+Syntax MicroPythonu je veľmi blízka bežnému Pythonu. Rozdiel je najmä v dostupných moduloch a v práci s hardvérom. Dôležité je odsadzovanie blokov, definovanie funkcií a používanie modulov \texttt{machine}, \texttt{time} alebo konkrétnych knižníc pre senzory.
+
+\begin{lstlisting}[language=Python,caption={Minimálny príklad v MicroPythone}]
+from machine import Pin
+from time import sleep
+
+led = Pin(2, Pin.OUT)
+
+while True:
+	led.value(1)
+	sleep(0.5)
+	led.value(0)
+	sleep(0.5)
+\end{lstlisting}
+
+V praxi sa často používajú aj vetvenia, slučky, funkcie a jednoduché stavové stroje. MicroPython umožňuje čítať GPIO, ovládať PWM, pracovať s I2C/SPI zariadeniami, komunikovať po UART a v niektorých prípadoch aj používať sieťové moduly.
 
 \subsection*{Silné stránky}
-- Rýchle prototypovanie, dynamické typy, bohatá syntax Pythonu.
-- Rozšírenia pre prácu s GPIO, I2C, SPI, ADC.
+\begin{itemize}
+	\item rýchle prototypovanie a menšie množstvo boilerplate kódu,
+	\item čitateľná syntax vhodná na výučbu,
+	\item priama práca s GPIO, I2C, SPI, ADC a PWM,
+	\item interaktívny REPL pre okamžité testovanie.
+\end{itemize}
 
 \subsection*{Obmedzenia}
-- Menej efektívny ako C/C++; obmedzená pamäť.
-- Nie všetky knižnice Pythonu sú dostupné.
+\begin{itemize}
+	\item menší výkon a väčšia pamäťová náročnosť ako pri C/C++,
+	\item obmedzený výber knižníc oproti bežnému Pythonu,
+	\item pri väčších projektoch treba pozor na fragmentáciu pamäte a dlhé slučky.
+\end{itemize}
 
 \subsection*{Nasadenie}
-- Použitie na ESP32/ESP8266 a iných mikrokontroléroch.
-- Kombinácia MicroPythonu na logike a C pre výkonovo náročné časti.
+MicroPython sa používa na ESP32, ESP8266 a na ďalších mikrokontroléroch, kde je dôležitý rýchly vývoj alebo jednoduchá údržba kódu. Pri náročnejších častiach možno kombinovať Pythonovú logiku s natívnymi modulmi alebo presunúť kritické časti do C.
 
 Pre dokumentáciu a referencie pozri MicroPython docs \cite{micropython_docs}.

@@ -1,0 +1,143 @@
+\section{IoT, siete a topológie}
+\label{sec:iot-topologies}
+
+Táto kapitola sa venuje štruktúre IoT systémov, bežným sieťovým topológiám a spôsobom integrácie lokálnych zariadení s bránami (gateway) a cloudovými službami.
+
+\subsection{IoT architektúra — vrstvy a komponenty}
+Typická IoT architektúra zahŕňa nasledujúce vrstvy:
+\begin{itemize}
+\item Periférna vrstva: senzory a akčné členy pripojené k mikrokontrolérom,
+\item Edge vrstva: lokálne spracovanie, agregácia dát, krátkodobé ukladanie a predspracovanie (filtering, kompresia),
+\item Brána (gateway): protokolová prekladacia vrstva, zabezpečená konektivita do internetu, lokálna politika a prípadne správa zariadení,
+\item Cloud/service vrstva: dlhodobé úložisko, analýza dát, UI a integračné API.
+\end{itemize}
+
+\subsection{Sieťové topológie}
+Výber topológie závisí od scenára použitia, fyzických obmedzení a požiadaviek na spoľahlivosť.
+
+\subsubsection*{Hviezda (star)}
+Najjednoduchšia topológia, kde všetky zariadenia komunikujú priamo s centrálnou bránou. Výhody: jednoduchá správa, nízka latencia pre priame príkazy. Nevýhoda: single point of failure v prípade zlyhania brány.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+node distance=10mm and 14mm,
+block/.style={draw, rounded corners, minimum width=2.4cm, minimum height=0.9cm, align=center},
+arrow/.style={-{Stealth[length=2.2mm]}, thick}
+]
+\node[block] (s1) {Senzor A};
+\node[block, below=of s1] (s2) {Senzor B};
+\node[block, below=of s2] (s3) {Senzor C};
+\node[block, right=28mm of s2] (gw) {Brána / AP};
+\draw[arrow] (s1) -- (gw);
+\draw[arrow] (s2) -- (gw);
+\draw[arrow] (s3) -- (gw);
+\end{tikzpicture}
+\caption{Hviezdicová topológia s centrálnou bránou.}
+\end{figure}
+
+\subsubsection*{Mesh}
+V mesh sieti zariadenia môžu smerovať správy cez viacero uzlov. Výhody: rozšíriteľnosť, odolnosť voči chybám (self‑healing). Nevýhody: zložitejšie smerovanie, väčšia spotreba uzlov, komplikovanejšia správa synchronizácie.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+node distance=11mm and 14mm,
+block/.style={draw, rounded corners, minimum width=2.2cm, minimum height=0.9cm, align=center},
+arrow/.style={-{Stealth[length=2.0mm]}, thick}
+]
+\node[block] (a) {Uzel 1};
+\node[block, right=of a] (b) {Uzel 2};
+\node[block, below=of a] (c) {Uzel 3};
+\node[block, right=of c] (d) {Uzel 4};
+\draw[arrow] (a) -- (b);
+\draw[arrow] (a) -- (c);
+\draw[arrow] (b) -- (d);
+\draw[arrow] (c) -- (d);
+\draw[arrow] (b) -- (c);
+\end{tikzpicture}
+\caption{Ukážka mesh topológie s viacerými cestami medzi uzlami.}
+\end{figure}
+
+\subsubsection*{Tree / hierarchická}
+Používa sa pri väčších nasadeniach, kde sú lokalizované podsiete pre efektívne smerovanie a segmentáciu. Umožňuje hierarchickú správu a zníženie broadcastov.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+node distance=9mm and 12mm,
+block/.style={draw, rounded corners, minimum width=2.4cm, minimum height=0.9cm, align=center},
+arrow/.style={-{Stealth[length=2.2mm]}, thick}
+]
+\node[block] (root) {Hlavná brána};
+\node[block, below left=of root] (a) {Podsieť A};
+\node[block, below right=of root] (b) {Podsieť B};
+\node[block, below left=of a] (a1) {Senzory A1};
+\node[block, below right=of a] (a2) {Senzory A2};
+\node[block, below left=of b] (b1) {Senzory B1};
+\node[block, below right=of b] (b2) {Senzory B2};
+\draw[arrow] (root) -- (a);
+\draw[arrow] (root) -- (b);
+\draw[arrow] (a) -- (a1);
+\draw[arrow] (a) -- (a2);
+\draw[arrow] (b) -- (b1);
+\draw[arrow] (b) -- (b2);
+\end{tikzpicture}
+\caption{Hierarchická topológia s podskupinami zariadení.}
+\end{figure}
+
+\subsubsection*{Hybridné topológie}
+V praxi sa často používajú kombinácie, napríklad mesh v lokálnej sieti a hviezda smerom k bráne.
+
+\subsection{Praktické scenáre a odôvodnenie}
+\subsubsection*{Smart home}
+V inteligentnej domácnosti je praktická hviezda s centrálnym Wi‑Fi AP alebo domácou bránou, pretože zariadenia bývajú v dosahu jednej miestnosti alebo bytu a potrebujú jednoduchú správu. Ak sú senzory na batériu a v dome je viac prekážok, často sa vyplatí Zigbee/Thread mesh, lebo umožní lepšie pokrytie a nižšiu spotrebu než Wi‑Fi.
+
+\subsubsection*{Priemyselná hala}
+V priemyselnej hale sa oplatí hierarchická alebo hybridná topológia, pretože zariadenia sú rozdelené do zón a medzi zónami bývajú rušenie, dlhšie trasy a rozdielne požiadavky. Lokálne podsiete môžu spracovať dáta v edge uzle a do nadradenej vrstvy posielať iba agregované výsledky, čo znižuje záťaž aj latenciu.
+
+\subsubsection*{Rozľahlé monitorovanie}
+Pre poľnohospodárske parcely, environmentálne senzory alebo rozmiestnené meracie body je vhodný LoRaWAN alebo podobná nízkoenergetická hviezda s gateway, pretože zariadenia musia fungovať mesiace až roky na batériu. Tu je dôležitejší dosah a výdrž než vysoká priepustnosť, preto sa dáta posielajú len v krátkych intervaloch alebo pri zmene stavu.
+
+\subsubsection*{Kedy zvoliť mesh a kedy nie}
+Mesh je výborný, keď potrebujeme premostiť prekážky a nechceme, aby jeden bod vypadol. Nehodí sa však tam, kde je kritická veľmi nízka spotreba alebo kde musíme komunikáciu udržať maximálne jednoduchú; v takom prípade je lepšia hviezda s kvalitnou bránou.
+
+\subsection{Komunikačné protokoly}
+Výber protokolu závisí od pasívnych a aktívnych požiadaviek:
+\begin{itemize}
+\item 
+\textbf{Wi‑Fi}: vysoká priepustnosť, jednoduché pripojenie do IP sietí, vyššia spotreba — vhodné pre napájané alebo periodicky aktívne zariadenia.
+\item \textbf{Bluetooth Low Energy (BLE)}: nízka spotreba, krátky dosah, vhodné pre senzory a osobné IoT.
+\item \textbf{LoRaWAN}: veľmi dlhý dosah pri nízkej priepustnosti, vhodné pre senzory s nízkou frekvenciou odosielania v rozľahlých oblastiach.
+\item \textbf{Zigbee / Thread / 6LoWPAN}: mesh‑priatelské protokoly pre domácu a priemyselnú automatizáciu.
+\item \textbf{MQTT / MQTT‑SN}: lightweight publish/subscribe protokol široko používaný v IoT; umožňuje jednoduché odosielanie telemetrie a príkazov.
+\item \textbf{CoAP}: REST‑like protokol pre constrained zariadenia, používa UDP.
+\end{itemize}
+
+\subsection{Edge vs. cloud processing}
+Presun časti logiky na edge (blízko zariadenia) môže znížiť latenciu a prenosovú záťaž. Pre kritické rozhodovanie alebo pri potrebe súkromnosti je vhodné vykonávať spracovanie lokálne a len agregované výsledky odosielať do cloudu.
+
+\subsection{Brána (gateway) — funkcie}
+Brána môže plniť viacero úloh:
+\begin{itemize}
+\item protokolová konverzia (napr. LoRaWAN → MQTT),
+\item zabezpečenie a autentifikácia zariadení,
+\item lokálne procesovanie a cacheovanie dát,
+\item správa aktualizácií (OTA) a centralizovaná správa zariadení.
+\end{itemize}
+
+\subsection{Škálovanie a správa}
+Pri rozsiahlom nasadení je dôležité navrhnúť adresovanie, manažment zariadení, ukladanie telemetrie a spôsob správy konfigurácií. Manažment zahŕňa monitorovanie zdravia zariadení, alarmy a plánovanie údržby.
+
+\subsection{Bezpečnostné požiadavky}
+Kľúčové aspekty: zabezpečenie komunikácie (TLS/DTLS), autentifikácia zariadení, bezpečné ukladanie poverení, izolácia kritických funkcií a plán aktualizácií. Pri návrhu treba myslieť na potenciálne vektory útoku a minimalizovať rozhrania vystavené priamo internetu.
+
+\subsection{Príklady nasadení}
+\begin{itemize}
+\item Smart home — Wi‑Fi/BLE senzory s lokálnou bránou a cloudovým dashboardom,
+\item Priemyselné monitorovanie — Ethernet/CAN senzory s lokálnym edge spracovaním a redundantnými bránami,
+\item Dálkový monitoring — LoRaWAN senzory s nízkou frekvenciou odosielania a centralizovaným backendom.
+\end{itemize}
+
+\subsection{Zhrnutie}
+Topológia a architektúra IoT systému musí odzrkadľovať požiadavky na dosah, spoľahlivosť, bezpečnosť a spotrebu. Výber správnych nástrojov a vrstiev výrazne uľahčí škálovanie a údržbu systémov v reálnom nasadení.

@@ -1,25 +1,69 @@
-\section{Vstavané (embedované) systémy}
+\section{Úvod}
+\label{sec:embedded-systems}
 
-Vstavané systémy sú výpočtové jednotky špecializované na riadenie konkrétnych úloh v rámci väčších systémov. Typické vlastnosti:
+Tento text predstavuje základné pojmy a kontext pre prácu s IoT a vstavanými systémami. IoT (Internet vecí) označuje súbor zariadení, ktoré sú vybavené senzormi, výpočtovým jadrom a sieťovou konektivitou s cieľom zbierať, spracovávať a zdieľať informácie. Vstavané systémy sú pritom výpočtové jednotky navrhnuté tak, aby spoľahlivo a efektívne vykonávali úlohy so špecifickými obmedzeniami — nízka spotreba, malá veľkosť, limitovaná pamäť a často pevne stanovené rozhrania.
 
-- Obmedzené zdroje (CPU, pamäť, napájanie).
-- Interakcia s fyzickým svetom cez senzory a akčné členy.
-- Režimy reálneho času alebo prísne časové požiadavky.
+Na úrovni návrhu sa zariadenie typicky skladá z troch vrstiev: (1) senzorickej vrstvy (zber údajov), (2) riadiacej vrstvy (spracovanie a rozhodovanie) a (3) komunikačnej/výstupnej vrstvy (odovzdanie výsledkov alebo spúšťanie akcií). Táto modularita uľahčuje navrhnúť systém, ktorý je rozšíriteľný, testovateľný a bezpečný.
 
-Kľúčové koncepty:
+V tejto knihe najprv uvedieme základné princípy vstavaných systémov a hardvérové komponenty, potom prejdeme k praktickej platforme ESP32 a programovaniu v MicroPythone. Následné kapitoly obsahujú návod na nasadenie, sieťové topológie pre IoT, návrh energeticky efektívnych riešení a súbor praktických príkladov a testovacích postupov.
 
-\subsection*{Hardvér}
-- Mikrokontroléry vs. mikroprocesory.
-- Periférie: ADC, DAC, PWM, UART, SPI, I2C.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+	node distance=14mm and 12mm,
+	block/.style={draw, rounded corners, minimum width=2.9cm, minimum height=1cm, align=center},
+	arrow/.style={-{Stealth[length=2.2mm]}, thick}
+]
+	\node[block] (sensor) {Senzory\\vstup};
+	\node[block, right=of sensor] (control) {Riadiaca jednotka\\spracovanie a logika};
+	\node[block, right=of control] (net) {Komunikácia\\a IoT služba};
+	\node[block, below=of control] (actuator) {Akčné členy\\výstup};
+	\node[block, above=of net] (user) {Používateľ / cloud\\monitoring};
 
-\subsection*{Softvér}
-- Firmvér: úzke viazaný softvér bežiaci priamo na HW.
-- Systémy s RTOS a bez RTOS (superloop/event-driven).
+	\draw[arrow] (sensor) -- node[above, font=\small]{dáta} (control);
+	\draw[arrow] (control) -- node[above, font=\small]{stav a udalosti} (net);
+	\draw[arrow] (net) -- node[right, font=\small]{príkazy} (user);
+	\draw[arrow] (control) -- node[right, font=\small]{riadenie} (actuator);
+	\draw[arrow] (user) |- node[pos=0.25, right, font=\small]{spätná väzba} (control);
+\end{tikzpicture}
+\caption{Zjednodušená schéma vstavaného IoT riadiaceho systému.}
+\end{figure}
+
+Kľúčové koncepty vstavaných systémov sa dajú čítať aj z pohľadu hardvéru a z pohľadu softvéru.
+
+\subsection*{Hardvérové prvky}
+Mikrokontrolér je iba jedna časť celku. V praxi ho dopĺňajú senzory, akčné členy, pamäť, napájanie, ochranné prvky a komunikačné rozhrania. Medzi najčastejšie periférie patria ADC pre analógové merania, DAC pre analógový výstup, PWM pre riadenie jasu alebo výkonu, časovače, čítače impulzov, GPIO a jednotky pre sériovú komunikáciu.
+
+\subsection*{Komunikačné protokoly a periférie}
+Na doske plošných spojov sa často používajú nasledujúce rozhrania:
+
+\begin{itemize}
+	\item \textbf{I2C} pre senzory, expandéry vstupov a displeje; používa dve vodiče a adresovanie zariadení.
+	\item \textbf{SPI} pre rýchlejšiu komunikáciu s displejmi, pamäťami alebo prevodníkmi.
+	\item \textbf{I2S} pre digitálny zvuk, mikrofóny a audio prevodníky.
+	\item \textbf{UART} pre servisnú komunikáciu, ladenie a prepojenie s inými modulmi.
+	\item \textbf{PWM} pre stmievanie LED, riadenie motorov a generovanie tónov.
+	\item \textbf{ADC a DAC} pre prácu s analógovým signálom.
+	\item \textbf{TWAI/CAN}, \textbf{SDIO}, \textbf{USB} alebo \textbf{RMT} tam, kde je potrebný robustnejší prenos alebo presné časovanie.
+\end{itemize}
+
+Tieto rozhrania sú dôležité preto, že prepojujú mikrokontrolér s reálnym svetom. Výber konkrétneho protokolu závisí od rýchlosti, počtu zariadení na zbernici, požiadaviek na časovanie a od typu pripojenej periférie.
+
+\subsection*{Softvérový model}
+Vstavaný firmvér môže bežať bez operačného systému, kde hlavný program obieha v slučke a priebežne obsluhuje vstupy, alebo nad RTOS, ktorý rozdeľuje úlohy na samostatné vlákna a plánuje ich beh. Bez ohľadu na zvolený model je dôležité správne spracovanie prerušení, časovačov, oneskorení a správy energie.
+
+\subsection*{Prečo je to dôležité pre IoT}
+IoT zariadenie musí často kombinovať lokálnu logiku s komunikáciou do siete. To znamená, že okrem samotného merania a riadenia musí vedieť aj ukladať stav, posielať dáta na server, prijímať príkazy a bezpečne pracovať s identitou zariadenia. V ďalších kapitolách sa preto prepája hardvér, sieťová komunikácia a programovanie v MicroPythone na platforme ESP32.
+
+\subsection*{Nasledujúce kapitoly}
+Po úvode nasleduje podrobná kapitola venovaná návrhu vstavaných systémov (architektúra, výber mikrokontroléra, napájanie, časovanie a softvérové modely). Ďalšia časť sa zameriava na IoT a siete — popíšeme bežné topológie, komponenty brány (gateway), edge vs. cloud spracovanie a bezpečnostné aspekty. Praktická časť potom ukáže prácu s platformou ESP32 a MicroPythonom, vrátane inštalácie cez Thonny a ukážkových projektov.
 
 \subsection*{Napájanie a spoľahlivosť}
-- Energetická efektívnosť, spánkové režimy, návrh batérií.
+Pri reálnom nasadení treba riešiť aj spotrebu, reset správanie, watchdog, ochranu proti výpadkom napájania a vhodné spánkové režimy. V batériových zariadeniach býva dôležitý aj návrh zobúdzacích podmienok a minimalizácia spotreby v nečinnosti.
 
 \subsection*{Bezpečnosť}
-- Ochrana komunikácie, autentifikácia zariadení, správa kľúčov.
+S rastúcim počtom pripojených zariadení rastie aj význam bezpečnosti. Do návrhu patrí autentifikácia zariadení, ochrana komunikácie, rozumné spravovanie kľúčov a kontrola toho, kto môže meniť stav zariadenia alebo čítať jeho dáta.
+
+V literatúre nájdete prehľad architektúr a konkrétnych návrhov od výrobcov mikrokontrolérov \cite{wolf2012embedded}.
 
 V literatúre nájdete prehľad architektúr a konkrétnych návrhov od výrobcov mikrokontrolérov \cite{wolf2012embedded}.

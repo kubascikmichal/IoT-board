@@ -3,16 +3,19 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 % Use English for stable pdflatex build; switch back to Slovak after styling
-\usepackage[english]{babel}
+\usepackage[slovak]{babel}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{tikz}
 \usepackage{geometry}
 \geometry{margin=25mm}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{csquotes}
 \usepackage[backend=bibtex,style=authoryear]{biblatex}
 \addbibresource{references.bib}
+\renewcommand{\figurename}{Obrázok}
 
 % Listings setup for Python
 \lstset{
@@ -37,12 +40,15 @@
 
 \input{sections/embedded_systems.tex}
 \clearpage
+\input{sections/embedded_systems_detailed.tex}
+\clearpage
+\input{sections/iot_topologies.tex}
+\clearpage
 \input{sections/esp32.tex}
 \clearpage
 \input{sections/micropython.tex}
 \clearpage
-% Temporarily omit examples (may contain UTF-8/listings issues) — re-enable later
-% \input{sections/examples.tex}
+\input{sections/examples.tex}
 \clearpage
 
 \printbibliography

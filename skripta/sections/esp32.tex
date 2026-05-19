@@ -1,18 +1,52 @@
 \section{ESP32 – prehľad platformy}
+\label{sec:esp32}
 
-ESP32 je populárna rodina mikrokontrolérov od Espressif, vhodná pre IoT projekty vďaka integrovanému Wi‑Fi a BLE.
+ESP32 je názov celej rodiny čipov od Espressif, ktoré sa používajú v IoT, v embedded projektoch aj v zariadeniach s bezdrôtovou komunikáciou. Spoločným menovateľom je široká podpora periférií, dostupné nástroje a silný ekosystém okolo ESP-IDF, Arduino core a MicroPythonu. Prehľad produktových rodín Espressif sa priebežne rozširuje a aktuálny katalóg zahŕňa viacero sérií pre rôzne triedy zariadení \cite{esp32_products}.
+
+\subsection*{Rodiny ESP32}
+Najpraktickejšie je deliť platformu podľa rodín:
+
+\begin{itemize}
+	\item \textbf{ESP32} ako pôvodná a stále rozšírená rodina s Wi-Fi a Bluetooth.
+	\item \textbf{ESP32-S2} a \textbf{ESP32-S3} pre univerzálne Wi-Fi zariadenia, kde sa často rieši aj USB a viac periférií.
+	\item \textbf{ESP32-C2}, \textbf{ESP32-C3}, \textbf{ESP32-C5}, \textbf{ESP32-C6} a \textbf{ESP32-C61} pre cenovo a energeticky úspornejšie RISC-V čipy.
+	\item \textbf{ESP32-H2}, \textbf{ESP32-H21} a \textbf{ESP32-H4} pre low-power zariadenia so zameraním na BLE a IEEE 802.15.4.
+	\item \textbf{ESP32-P4} pre výkonnejšie aplikácie s HMI, grafikou a bohatými perifériami.
+	\item \textbf{ESP32-E22} ako konektivita-oriented co-processor v produktoch Espressif.
+\end{itemize}
 
 \subsection*{Hlavné vlastnosti}
-- Dual-core Tensilica LX6 (v niektorých verziách single-core), až 240 MHz.
-- Integrované Wi‑Fi 802.11 b/g/n a Bluetooth (Classic a BLE).
-- Viaceré periférie: ADC, DAC, SPI, I2C, PWM, UART, SDIO, CAN (v niektorých modeloch).
+Aj napriek rozdielom medzi jednotlivými sériami majú zariadenia tejto rodiny spoločné typické črty:
+
+\begin{itemize}
+	\item integrovaná bezdrôtová konektivita podľa danej série,
+	\item bohatý set periférií pre senzoriku a riadenie,
+	\item podporu pre spánkové režimy a nízku spotrebu,
+	\item kompatibilný vývojový ekosystém a dostupnú dokumentáciu.
+\end{itemize}
+
+Architektúra sa líši podľa konkrétneho čipu. Staršie modely používajú Xtensa jadrá, novšie série prechádzajú na RISC-V. To je dôležité najmä pri výbere toolchainu, pri použití knižníc a pri odhadovaní výkonu.
 
 \subsection*{Vývojové prostredia}
-- Espressif IDF (oficiálne), Arduino core for ESP32, PlatformIO.
-- Podpora MicroPython a ďalších runtime.
+K najpoužívanejším nástrojom patria ESP-IDF ako oficiálny framework, Arduino core for ESP32, PlatformIO a tiež MicroPython. Vo väčších projektoch sa často volí ESP-IDF, pretože poskytuje najpriamejší prístup k perifériám, sieťovým službám a aktualizáciám firmvéru.
+
+\subsection*{Periférie v praxi}
+ESP32 rodina je zaujímavá tým, že okrem základných GPIO ponúka aj rozhrania, ktoré sa v embedded projektoch používajú veľmi často:
+
+\begin{itemize}
+	\item \textbf{UART} pre debugovanie a sériovú komunikáciu,
+	\item \textbf{I2C} pre senzory a displeje,
+	\item \textbf{SPI} pre rýchle periférie a pamäte,
+	\item \textbf{I2S} pre audio a streamované dáta,
+	\item \textbf{PWM / LED PWM / MCPWM} pre LED, motory a časovo presné výstupy,
+	\item \textbf{ADC / DAC} pre analógové merania,
+	\item \textbf{TWAI/CAN}, \textbf{RMT}, \textbf{USB} alebo touch periférie podľa konkrétnej série.
+\end{itemize}
 
 \subsection*{Použitie v projektoch}
-- Edge processing, senzory, prototypovanie.
-- Stratégie pre spoľahlivý prevod dát a OTA aktualizácie.
+V projektoch sa ESP32 používa na edge processing, riadenie senzorov, bezdrôtové brány, lokálne webové rozhrania aj komunikáciu s cloudom. Vďaka tomu sa hodí na rýchle prototypovanie aj na zariadenia, ktoré potrebujú dlhodobú a stabilnú prevádzku.
+
+\subsection*{Čo si z tejto kapitoly odniesť}
+Pre zvyšok skrípt je dôležité hlavne to, že ESP32 nie je jeden čip, ale platforma s viacerými rodinami a rozdielnymi prioritami. Niektoré série sú vhodné na klasické Wi-Fi zariadenia, iné sa zameriavajú na nízku spotrebu, audio, HMI alebo na siete Thread, Zigbee a BLE. Tento výber potom priamo určuje, ktoré periférie a aký štýl programovania sa v projekte oplatí použiť.
 
 Na detailné technické parametre a príklady kódu odkazujeme na datasheet a oficiálnu dokumentáciu \cite{esp32_datasheet}.
