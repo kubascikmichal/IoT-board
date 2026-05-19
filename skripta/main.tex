@@ -2,7 +2,6 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-% Use English for stable pdflatex build; switch back to Slovak after styling
 \usepackage[slovak]{babel}
 \usepackage{hyperref}
 \usepackage{graphicx}
@@ -15,7 +14,7 @@
 \usepackage{csquotes}
 \usepackage[backend=bibtex,style=authoryear]{biblatex}
 \addbibresource{references.bib}
-\renewcommand{\figurename}{Obrázok}
+\addto\captionsslovak{\renewcommand{\figurename}{Obrázok}}
 
 % Listings setup for Python
 \lstset{
