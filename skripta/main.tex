@@ -1,0 +1,49 @@
+% Skripta: IoT a vstavané systémy
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% Use English for stable pdflatex build; switch back to Slovak after styling
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=25mm}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{csquotes}
+\usepackage[backend=bibtex,style=authoryear]{biblatex}
+\addbibresource{references.bib}
+
+% Listings setup for Python
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  numbers=left,
+  numberstyle=\tiny,
+  showstringspaces=false,
+}
+
+\title{Skripta: IoT a vstavané systémy}
+\author{Kolektív}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\input{sections/embedded_systems.tex}
+\clearpage
+\input{sections/esp32.tex}
+\clearpage
+\input{sections/micropython.tex}
+\clearpage
+% Temporarily omit examples (may contain UTF-8/listings issues) — re-enable later
+% \input{sections/examples.tex}
+\clearpage
+
+\printbibliography
+\end{document}
