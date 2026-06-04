@@ -1,0 +1,51 @@
+\section{Úvod do platformy ESP32-S2 a IoT dosky}
+Platforma ESP32-S2 predstavuje moderný mikrokontrolérový základ pre výučbu aj praktickú realizáciu internetu vecí. Jej výhodou je kombinácia dostatočného výpočtového výkonu, nízkej energetickej náročnosti, integrovanej bezdrôtovej komunikácie a širokej podpory periférií. V kontexte výučby je dôležité, že študent môže na jednej doske overiť princípy digitálneho vstupu a výstupu, analógového merania, časovania, prerušení, senzoriky a sieťovej komunikácie. V kontexte vývoja prototypov je zase podstatná schopnosť rýchlo prejsť od experimentu k stabilnému riešeniu.
+
+IoT Stich board bola navrhnutá tak, aby zhromažďovala najčastejšie používané prvky na jednom hardvérovom základe. Vďaka tomu je možné systematicky budovať znalosti od základných experimentov až po komplexnejšie scenáre so zberom a prenosom dát. Praktická práca s doskou zároveň vedie k pochopeniu súvislostí medzi elektrickou schémou, mapovaním pinov, softvérovou konfiguráciou a reálnym správaním periférií.
+
+\section{Hardvérová architektúra a mapovanie pinov}
+Táto kapitola opisuje fyzické prepojenie mikrokontroléra s perifériami a vysvetľuje význam korektného mapovania pinov. Každá periféria je pripojená na konkrétnu vetvu, ktorá určuje spôsob inicializácie v programe aj obmedzenia pri súčasnom používaní viacerých funkcií. Pri práci s doskou je preto potrebné vždy overiť schému zapojenia a následne zosúladiť konštanty v zdrojovom kóde.
+
+Dôležitou zásadou je konzistentné oddeľovanie logických názvov signálov od čísel GPIO. Použitie pomenovaných konštánt zvyšuje čitateľnosť programu, znižuje riziko zámeny a uľahčuje údržbu pri revízii hardvéru. V pedagogickej praxi sa tento prístup osvedčuje najmä pri tímovej práci, kde viacero osôb upravuje rovnaký projekt.
+
+\subsection{Príklad: Identifikácia periférie podľa schémy}
+Pred implementáciou nového modulu je vhodné vykonať jednoduchý postup: (1) nájsť perifériu v schéme, (2) určiť signál a napájaciu vetvu, (3) overiť príslušné GPIO v tabuľke mapovania, (4) aktualizovať konštanty v programe. Týmto postupom sa predchádza chybám, ktoré sa často prejavia až počas testovania.
+
+\section{Programové prostredie a štruktúra projektu}
+Softvérová časť je v repozitári organizovaná do samostatných príkladov, pričom každý príklad rieši konkrétny tematický celok. Tento prístup podporuje postupné učenie: od servisného testu dosky cez prácu so vstupmi a výstupmi až po sieťové služby. Každý adresár obsahuje implementáciu a stručný sprievodný popis, ktorý vysvetľuje cieľ úlohy a očakávaný výsledok.
+
+Pri písaní programov pre ESP32-S2 je vhodné udržiavať jasné členenie na inicializačnú časť, hlavnú slučku a pomocné funkcie. Inicializácia má konfigurovať periférie a komunikačné rozhrania, hlavná slučka realizuje periodické úlohy a pomocné funkcie zapuzdrujú opakujúce sa operácie. Takéto členenie zvyšuje zrozumiteľnosť kódu a zjednodušuje diagnostiku pri poruchových stavoch.
+
+\subsection{Príklad: Odporúčaná kostra programu}
+Odporúča sa, aby program najprv explicitne overil vstupné podmienky (napr. dostupnosť konfigurácie), následne inicializoval periférie a až potom prešiel do hlavnej slučky. V hlavnej slučke je vhodné oddeliť zber dát, lokálne spracovanie a komunikáciu so vzdialenou službou.
+
+\section{Práca so senzormi a akčnými členmi}
+Doska umožňuje kombinovať viacero typov periférií: digitálne tlačidlá, analógový fotoodpor, teplotno-vlhkostný senzor DHT, OLED displej, RGB LED a bzučiak. Pri návrhu aplikácie je dôležité zohľadniť, že jednotlivé periférie majú odlišné časové požiadavky. Napríklad čítanie niektorých senzorov vyžaduje stabilné intervaly a signalizačné prvky môžu pri intenzívnom používaní ovplyvniť vnímanie odozvy používateľom.
+
+Z pedagogického hľadiska je vhodné zaviesť jednotný model práce: inicializácia periférie, periodické meranie alebo zmena stavu, validácia výsledku a diagnostický výstup. Takýto model pomáha študentom systematicky odhaľovať chyby a zároveň buduje návyk dokumentovať stav systému počas experimentu.
+
+\subsection{Príklad: Validácia merania pred publikovaním}
+Pred odoslaním nameraných hodnôt je potrebné overiť, či sú dáta fyzikálne realistické a či čítanie prebehlo bez chyby. Ak validácia zlyhá, odporúča sa vykonať opakované meranie a upozorniť používateľa diagnostickou správou.
+
+\section{Komunikačné protokoly v IoT aplikáciách}
+V tejto kapitole sú protokoly opísané podrobnejšie, aby bolo zrejmé, aké kompromisy prinášajú pri návrhu IoT riešení. Voľba protokolu priamo ovplyvňuje spoľahlivosť, latenciu, energetickú náročnosť aj bezpečnosť prenosu.
+
+\subsection{HTTP/HTTPS}
+HTTP je transakčný protokol typu požiadavka--odpoveď, vhodný pre jednoduché odosielanie telemetrie na webové služby. Jeho hlavnou výhodou je univerzálna podpora infraštruktúry a jednoduchá integrácia s cloudovými platformami. Nevýhodou je vyššia režijná komunikácia pri častom odosielaní malých správ. Pri použití HTTPS sa zabezpečuje dôvernosť a integrita prenosu pomocou TLS, pričom treba počítať s vyššími nárokmi na pamäť a čas nadväzovania spojenia.
+
+\subsection{MQTT}
+MQTT je ľahký publikačno-odberový protokol navrhnutý pre zariadenia s obmedzenými zdrojmi a nestabilným pripojením. Komunikácia prebieha cez sprostredkovateľa (broker), ktorý distribuuje správy medzi klientmi podľa tém. Dôležitou vlastnosťou sú úrovne QoS, ktoré umožňujú zvoliť kompromis medzi spoľahlivosťou doručenia a prenosovou réžiou. V praxi je MQTT vhodný najmä pri väčšom počte zariadení a potrebe obojsmernej komunikácie.
+
+\subsection{CoAP}
+CoAP je protokol určený pre obmedzené IoT uzly, typicky bežiaci nad UDP. Zachováva REST princípy podobné HTTP, ale s menšou komunikačnou záťažou. Podporuje potvrdzované aj nepotvrdzované správy, čo umožňuje flexibilne riadiť spoľahlivosť prenosu. V prostrediach s obmedzenou kapacitou siete môže byť CoAP efektívnejší než HTTP, avšak vyžaduje vhodnú aplikačnú infraštruktúru.
+
+\subsection{Príklad: Voľba protokolu podľa scenára}
+Pre periodické odosielanie meraní do jednoduchej cloudovej služby je praktické použiť HTTPS API. Ak aplikácia vyžaduje obojsmerné riadenie viacerých zariadení s nízkou latenciou, je vhodnejšie MQTT. Pri extrémne úsporných uzloch a lokálnych sieťach môže byť efektívna voľba CoAP.
+
+\section{Testovanie, diagnostika a prevádzková spoľahlivosť}
+Kľúčovým predpokladom stabilnej prevádzky je systematické testovanie hardvéru aj softvéru. Servisný test dosky má overiť základnú funkčnosť všetkých periférií ešte pred implementáciou rozsiahlejších úloh. Tým sa minimalizuje riziko, že chyby zapojenia budú mylne interpretované ako softvérové problémy.
+
+Z pohľadu prevádzkovej spoľahlivosti je vhodné zaviesť diagnostické výpisy, kontrolu hraničných stavov a bezpečné spracovanie komunikačných chýb. Program by mal vedieť zotaviť sa z dočasného výpadku senzora alebo siete bez potreby manuálneho zásahu. Takýto prístup zvyšuje robustnosť riešenia v reálnych podmienkach.
+
+\subsection{Príklad: Postup pri zlyhaní merania alebo prenosu}
+Odporúčaný postup je: (1) detegovať chybu, (2) zapísať diagnostickú informáciu, (3) opakovať operáciu s primeraným oneskorením, (4) po prekročení limitu pokusov prejsť do bezpečného režimu a čakať na obnovu podmienok.
