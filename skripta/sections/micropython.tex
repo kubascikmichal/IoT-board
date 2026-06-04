@@ -1,57 +1,37 @@
 \section{MicroPython pre vstavané systémy}
 \label{sec:micropython}
 
-MicroPython je odľahčená implementácia jazyka Python určená pre mikrokontroléry. Jeho cieľom je ponúknuť čitateľnú syntax, rýchle prototypovanie a jednoduchú prácu s perifériami aj priamo na zariadení. V projektoch s ESP32 je veľmi vhodný na výučbu, experimentovanie aj menšie IoT prototypy.
+MicroPython je minimalistická implementácia jazyka Python určená pre obmedzené hardvérové platformy. Je navrhnutý tak, aby poskytoval interaktívne prostredie (REPL), priamy prístup k perifériám a rýchle prototypovanie pri zachovaní čitateľnej a expresívnej syntaxe.
 
-\subsection*{Inštalácia cez Thonny}
-Pre začiatočníkov a pri rýchlom nasadzovaní odporúčame použiť grafické rozhranie Thonny, ktoré obsahuje jednoduchý nástroj na nahranie MicroPython firmvéru a prácu so sériovou konzolou.
+\subsection*{Architektúra run‑time a pamäťový model}
+MicroPython implementuje heap‑based správu pamäte s garbage collection (GC). Pre návrh stabilných aplikácií je potrebné pochopiť obmedzenia dynamickej alokácie a strategicky minimalizovať vytváranie objektov v kritických slučkách. Kľúčové sú tiež mechanizmy pre "frozen" moduly (vkladanie Python kódu do firmvéru) a native moduly pre urýchlenie kritických sekcií.
 
-Postup (stručne):
-\begin{enumerate}
-\item Stiahnite a nainštalujte Thonny z \url{https://thonny.org} pre váš operačný systém.
-\item Pripojte ESP32 k počítaču cez USB a spustite Thonny.
-\item V Thonny prejdite do \texttt{Tools → Options → Interpreter} a v poli \texttt{Interpreter} vyberte \texttt{MicroPython (ESP32)}.
-\item Vyberte správny \texttt{Port} (napr. \texttt{/dev/ttyUSB0} alebo COM port na Windows).
-\item Kliknite na tlačidlo \texttt{Install or update firmware} (v niektorých verziách cez menu za možnosťou výberu interpretera). Vyberte odporúčanú verziu firmvéru alebo zadajte cestu k stiahnutému \texttt{.bin} súboru.
-\item Potvrďte nahratie; Thonny vykoná potrebné kroky (erase + write) a po skončení otvorí REPL.
-\end{enumerate}
-
-Thonny tiež poskytuje jednoduchý editor a možnosť nahrávať súbory priamo na zariadenie (Save → Device). To zefektívňuje prototypovanie, pretože po uložení \texttt{main.py} zariadenie automaticky spustí upravený kód po reštarte.
-
-\subsection*{Základná syntax}
-Syntax MicroPythonu je veľmi blízka bežnému Pythonu. Rozdiel je najmä v dostupných moduloch a v práci s hardvérom. Dôležité je odsadzovanie blokov, definovanie funkcií a používanie modulov \texttt{machine}, \texttt{time} alebo konkrétnych knižníc pre senzory.
-
-\begin{lstlisting}[language=Python,caption={Minimálny príklad v MicroPythone}]
-from machine import Pin
-from time import sleep
-
-led = Pin(2, Pin.OUT)
-
-while True:
-	led.value(1)
-	sleep(0.5)
-	led.value(0)
-	sleep(0.5)
-\end{lstlisting}
-
-V praxi sa často používajú aj vetvenia, slučky, funkcie a jednoduché stavové stroje. MicroPython umožňuje čítať GPIO, ovládať PWM, pracovať s I2C/SPI zariadeniami, komunikovať po UART a v niektorých prípadoch aj používať sieťové moduly.
-
-\subsection*{Silné stránky}
+\subsection*{Výkonnostné optimalizácie}
+Pre zvýšenie výkonu a deterministiky v MicroPythone sú k dispozícii viaceré techniky:
 \begin{itemize}
-	\item rýchle prototypovanie a menšie množstvo boilerplate kódu,
-	\item čitateľná syntax vhodná na výučbu,
-	\item priama práca s GPIO, I2C, SPI, ADC a PWM,
-	\item interaktívny REPL pre okamžité testovanie.
+	\item Použitie dekorátora \texttt{micropython.native} alebo \texttt{micropython.viper} pre kompiláciu kritických funkcií do natívneho kódu.
+	\item Vkladanie natívnych modulov v C pre časovo náročné operácie alebo pri práci s veľkými dátovými štruktúrami.
+	\item Použitie DMA, hardvérových periférií a RMT namiesto softvérového bit‑bangingu.
 \end{itemize}
 
-\subsection*{Obmedzenia}
+\subsection*{Konkurentné modely a I/O}
+MicroPython podporuje viaceré modely spracovania súbežných udalostí: prerušeniami riadené handlery (ISR), asynchrónne programovanie cez \texttt{uasyncio} a jednoduché preemptívne prístupy kombinované s frontami. ISR musia byť krátke a mali by len nastavovať príznaky alebo zapisovať do fronty, kde hlavný cyklus spracuje zložitejšie akcie.
+
+\subsection*{Vývoj, nasadenie a nástroje}
+Pre rýchle nahrávanie a ladenie sa často používa Thonny; pre produkčné buildy a integráciu sa odporúča automatisovať vytváranie firmware so zamrazenými modulmi a testovacím balíčkom. Dôležitý je aj monitoring pamäti počas vývoja a profilovanie časových kritických úsekov.
+
+\subsection*{Silné a slabé stránky}
+MicroPython ponúka výrazné zjednodušenie vývoja, interaktívne ladenie a rýchle nasadenie. Na druhej strane, oproti nativnému C/C++ riešeniu sú obmedzenia v rýchlosti, správe pamäte a dostupnosti knižníc. Preto pre produkčné systémy často kombinujeme MicroPython pre riadenie vyššej úrovne a natívne moduly pre výpočtovo náročné časti.
+
+\subsection*{Praktické doporučenia}
 \begin{itemize}
-	\item menší výkon a väčšia pamäťová náročnosť ako pri C/C++,
-	\item obmedzený výber knižníc oproti bežnému Pythonu,
-	\item pri väčších projektoch treba pozor na fragmentáciu pamäte a dlhé slučky.
+	\item Minimalizovať dynamickú alokáciu v hlavných slučkách a v kritických handleroch.
+	\item Používať "frozen modules" pre stabilitu a zníženie nárokov na RAM.
+	\item Využiť \texttt{uasyncio} pre čitateľné asynchrónne I/O a riadenie viacerých úloh.
+	\item Keď je potrebná vysoká výkonnosť, extrahovať kritické algoritmy do C rozšírení.
 \end{itemize}
 
 \subsection*{Nasadenie}
-MicroPython sa používa na ESP32, ESP8266 a na ďalších mikrokontroléroch, kde je dôležitý rýchly vývoj alebo jednoduchá údržba kódu. Pri náročnejších častiach možno kombinovať Pythonovú logiku s natívnymi modulmi alebo presunúť kritické časti do C.
+MicroPython je vhodný pre prototypovanie, výučbu a menšie produkčné nasadenia, kde rýchlosť vývoja a flexibilita prevažujú nad maximálnou výkonnosťou. Pri väčších projektov sa odporúča hybridný prístup: MicroPython pre orchestráciu a natívne moduly pre časovo citlivé časti.
 
-Pre dokumentáciu a referencie pozri MicroPython docs \cite{micropython_docs}.
+Pre ďalšie informácie a referencie pozri MicroPython dokumentáciu a príručky k platforme ESP32 \cite{micropython_docs}.

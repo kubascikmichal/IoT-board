@@ -1,0 +1,51 @@
+\babel@toc {slovak}{}\relax 
+\contentsline {section}{\numberline {1}Úvod}{3}{section.1}%
+\contentsline {section}{\numberline {2}Úvod}{4}{section.2}%
+\contentsline {section}{\numberline {3}Vstavané systémy — podrobný prehľad}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Architektúra systému}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Architektonický návrh a rozdelenie zodpovedností}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Výber procesorovej platformy}{6}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Časovanie, plánovanie a deterministické správanie}{6}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Verifikácia a testovanie}{7}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Regulačné a normatívne aspekty}{7}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}EMC/EMI a fyzické návrhy}{7}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.8}Napájanie a energetická efektívnosť}{7}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Bezpečnostné vzory}{7}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Nasadenie a životný cyklus produktu}{7}{subsection.3.10}%
+\contentsline {subsection}{\numberline {3.11}Zhrnutie}{7}{subsection.3.11}%
+\contentsline {section}{\numberline {4}IoT, siete a topológie}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}IoT architektúra — vrstvy a komponenty}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Sieťové topológie}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Praktické scenáre a odôvodnenie}{9}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Komunikačné protokoly}{10}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Edge vs. cloud processing}{10}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Brána (gateway) — funkcie}{10}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Škálovanie a správa}{10}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Bezpečnostné požiadavky}{10}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}Príklady nasadení}{10}{subsection.4.9}%
+\contentsline {subsection}{\numberline {4.10}Zhrnutie}{11}{subsection.4.10}%
+\contentsline {section}{\numberline {5}Komunikačné protokoly}{12}{section.5}%
+\contentsline {subsection}{\numberline {5.1}MQTT}{12}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}CoAP}{12}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}HTTP/REST a WebSocket}{12}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Narrowband a LPWAN technológie: LoRaWAN, NB‑IoT, Sigfox}{13}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Bluetooth Low Energy (BLE) a Zigbee}{13}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}6LoWPAN, Thread a IPv6}{13}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Bezpečnostné aspekty protokolov}{13}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}Kritériá výberu protokolu}{13}{subsection.5.8}%
+\contentsline {section}{\numberline {6}ESP32 – prehľad platformy}{14}{section.6}%
+\contentsline {section}{\numberline {7}MicroPython pre vstavané systémy}{16}{section.7}%
+\contentsline {section}{\numberline {8}Príklady a experimentálne cvičenia}{18}{section.8}%
+\contentsline {section}{\numberline {9}Servisný test dosky}{18}{section.9}%
+\contentsline {section}{\numberline {10}Metodika experimentov a hodnotenie}{21}{section.10}%
+\contentsline {section}{\numberline {11}Interakcia s tlačidlami: hra hádania}{21}{section.11}%
+\contentsline {section}{\numberline {12}Digitálne riadenie RGB LED}{23}{section.12}%
+\contentsline {section}{\numberline {13}PWM riadenie jasu RGB LED}{24}{section.13}%
+\contentsline {section}{\numberline {14}Prerušenia a meranie dĺžky stlačenia}{25}{section.14}%
+\contentsline {section}{\numberline {15}Sériové LED WS2812B}{26}{section.15}%
+\contentsline {section}{\numberline {16}PWM bzučiak a krátka melódia}{27}{section.16}%
+\contentsline {section}{\numberline {17}Analógové meranie svetla}{28}{section.17}%
+\contentsline {section}{\numberline {18}Senzor DHT: teplota a vlhkosť}{29}{section.18}%
+\contentsline {section}{\numberline {19}Wi-Fi prístupový bod a webové ovládanie}{30}{section.19}%
+\contentsline {section}{\numberline {20}Odosielanie dát do ThingSpeak}{32}{section.20}%
+\contentsline {section}{\numberline {21}MQTT publish/subscribe komunikácia}{33}{section.21}%

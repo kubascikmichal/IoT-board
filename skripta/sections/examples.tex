@@ -1,6 +1,6 @@
-\section{Príklady podľa zadania}
+\section{Príklady a experimentálne cvičenia}
 
-V tejto kapitole sú príklady popísané sekvenčne po logických blokoch. Pri každej ukážke najprv stručne popíšem cieľ a motív riešenia, potom rozoberiem jednotlivé kroky, na ktoré treba pri implementácii dbať, a nakoniec uvádzam skrátený kódový výrez v poradí, v akom sa program číta. Texty obsahujú poznámky o možných chybách, predpokladoch o zapojení a návrhoch, ako daný blok rozšíriť.
+Táto kapitola obsahuje súbor systematicky usporiadaných príkladov a experimentálnych cvičení, ktorých cieľom je ilustrovať navrhované princípy a overiť ich v reálnom prostredí. Ku každému príkladu sú pripojené: (1) jasne definovaný cieľ, (2) krok‑po‑kroku implementačné pokyny, (3) skrátené úryvky kódu a (4) metodika testovania a merania výsledkov. Poznámky k implementácii zahŕňajú potenciálne chyby, predpoklady o zapojení a odporúčania pre rozšírenie alebo zmeny konfigurácie.
 
 \section{Servisný test dosky}
 Tento príklad slúži ako rýchly self-test po flashnutí zariadenia. Cieľom je overiť základné periférie (displej, LED, senzory, tlačidlá, bzučiak) a získať rýchlu spätnú väzbu o tom, či sú piny a moduly správne zapojené. V texte uvádzam, ktoré merania sú deterministické (napr. ADC čítanie) a ktoré závisia na externých podmienkach (napr. svetelnosť), ako aj tipy na ladenie (kontrola napájania, sériový výstup, jednoduché multimeter kontroly).
@@ -89,6 +89,19 @@ for name, state, note in results:
 \end{lstlisting}
 
 \clearpage
+\section{Metodika experimentov a hodnotenie}
+
+Pre vykonávanie reprodukovateľných experimentov a porovnateľné hodnotenie výsledkov odporúčame nasledovné postupy:
+\begin{itemize}
+	\item Definovať jasné metriky (spotreba energie, latencia odozvy, chybovosť, úspešnosť prenosu) a meracie podmienky (teplota, napájacie napätie).
+	\item Použiť opakované merania a štatistické spracovanie (priemer, štandardná odchýlka), aby sa rozlíšili náhodné od systematických chýb.
+	\item Pri meraní spotreby energie zaznamenať prúdové profily počas celého cyklu, najmä pri spúšťaní rádiových modulov.
+	\item Pri sieťových testoch vykonávať testy v rôznych podmienkach (rôzne kanály, vzdialenosti, rušenie) a zaznamenať metriky úspešnosti prenosu a latencie.
+	\item Dokumentovať verzie firmvéru, konfiguráciu periférií a použité knižnice, aby bolo možné experimenty reprodukovať.
+\end{itemize}
+
+Tieto zásady zlepšujú kvalitu meraní a uľahčujú následnú analýzu pri porovnávaní návrhov alebo pri optimalizácii parametrov systému.
+
 \section{Interakcia s tlačidlami: hra hádania}
 Tento príklad demonštruje praktické použitie tlačidiel ako vstupu pre jednoduchú hru, pričom sa rieši detekcia stlačení, tvorba pseudo-náhody z kombinácie stlačení a spätná väzba užívateľovi. V texte uvádzam, ako spracovať bouncing, prečo nie je vhodné použiť ťažký výpočet v IRQ a ako testovať, či sú piny správne preradené.
 

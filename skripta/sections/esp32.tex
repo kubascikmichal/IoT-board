@@ -1,52 +1,41 @@
 \section{ESP32 – prehľad platformy}
 \label{sec:esp32}
 
-ESP32 je názov celej rodiny čipov od Espressif, ktoré sa používajú v IoT, v embedded projektoch aj v zariadeniach s bezdrôtovou komunikáciou. Spoločným menovateľom je široká podpora periférií, dostupné nástroje a silný ekosystém okolo ESP-IDF, Arduino core a MicroPythonu. Prehľad produktových rodín Espressif sa priebežne rozširuje a aktuálny katalóg zahŕňa viacero sérií pre rôzne triedy zariadení \cite{esp32_products}.
+ESP32 predstavuje platformu obsahujúcu rodinu systémov na čipe (SoC) vyvinutých spoločnosťou Espressif Systems a široko využívaných v IoT a vstavaných aplikáciách. Charakterizuje ju bohatá sada periférií, rôzne výkonnostné a energetické profily rôznych variantov a rozvinutý ekosystém vrátane oficiálneho SDK (ESP‑IDF), Arduino core a podporných implementácií ako MicroPython \cite{esp32_products}.
 
-\subsection*{Rodiny ESP32}
-Najpraktickejšie je deliť platformu podľa rodín:
+\subsection*{Klasifikácia rodín a architektúr}
+Platforma zahŕňa niekoľko rodín optimalizovaných pre odlišné účely: všeobecné Wi‑Fi/BLE moduly (ESP32, ESP32‑S3), nízko‑energetické riešenia a RISC‑V variácie (ESP32‑C3, ESP32‑C6), špecializované čipy pre IEEE 802.15.4 (ESP32‑H2) a výkonné SoC pre HMI aplikácie (ESP32‑P4). Architektonicky sú rozdiely dôležité pri výbere toolchainu (Xtensa vs. RISC‑V), podpore periférií a pri plánovaní výkonu.
 
+\subsection*{Kľúčové vlastnosti a návrhové dôsledky}
+Z pohľadu návrhu sú pre ESP32 relevantné nasledujúce aspekty:
 \begin{itemize}
-	\item \textbf{ESP32} ako pôvodná a stále rozšírená rodina s Wi-Fi a Bluetooth.
-	\item \textbf{ESP32-S2} a \textbf{ESP32-S3} pre univerzálne Wi-Fi zariadenia, kde sa často rieši aj USB a viac periférií.
-	\item \textbf{ESP32-C2}, \textbf{ESP32-C3}, \textbf{ESP32-C5}, \textbf{ESP32-C6} a \textbf{ESP32-C61} pre cenovo a energeticky úspornejšie RISC-V čipy.
-	\item \textbf{ESP32-H2}, \textbf{ESP32-H21} a \textbf{ESP32-H4} pre low-power zariadenia so zameraním na BLE a IEEE 802.15.4.
-	\item \textbf{ESP32-P4} pre výkonnejšie aplikácie s HMI, grafikou a bohatými perifériami.
-	\item \textbf{ESP32-E22} ako konektivita-oriented co-processor v produktoch Espressif.
+	\item integrované rádiové subsystémy (Wi‑Fi, BLE) s dosahom a spotrebou charakteristickými pre cieľovú aplikáciu;
+	\item viacero periférií s hardvérovou podporou DMA, časovačmi a RMT pre presné časovanie;
+	\item podpora hlbokých spánkových režimov a fine‑grained power domains, čo umožňuje optimalizáciu spotreby;
+	\item bezpečnostné mechanizmy ako secure boot, flash encryption a podpora pre OTA aktualizácie.
 \end{itemize}
 
-\subsection*{Hlavné vlastnosti}
-Aj napriek rozdielom medzi jednotlivými sériami majú zariadenia tejto rodiny spoločné typické črty:
+Návrh systému na ESP32 by mal zohľadniť približnú energetickú bilanciu (profilovanie odberu pri vysielaní Wi‑Fi, pri aktívnom MCU a v spánku) a plánovať agregáciu komunikácie, aby sa minimalizovala frekvencia energeticky náročných operácií.
 
+\subsection*{Vývojové nástroje a pracovná metodika}
+ESP‑IDF poskytuje nízkoúrovňový prístup k perifériám, konfiguračný systém (menuconfig), nástroje pre profiling a diagnostiku. Arduino core je výhodný pre rýchle prototypovanie, PlatformIO pre integráciu do CI a MicroPython pre interaktívne experimentovanie. Pre produkčné projekty sa odporúča používať ESP‑IDF spolu s robustným build systémom a testovacou infraštruktúrou.
+
+\subsection*{Pokročilé techniky a best practices}
+Pri využití periférií je často žiaduce použiť DMA na minimalizáciu zaťaženia CPU pri prenosoch SPI/I2S alebo pri zázname ADC. Pre presné signály (WS2812, infračervené protokoly) je užitočný RMT modul namiesto softvérového bit‑bangingu.
+
+Pri viacjadrových SoC (dvojjadrové varianty) je nutné riešiť synchronizáciu medzi jadrami, rozdelenie práce (napr. jadro A pre sieť, jadro B pre spracovanie), a vyhnúť sa závodom o periférie bez vhodnej synchronizácie.
+
+\subsection*{Bezpečnosť a nasadenie}
+ESP32 podporuje zabezpečené zavádzanie (secure boot) a šifrovanie obsahu flash pamäte, čo je dôležité pre ochranu duševného vlastníctva a integritu firmvéru. Pre bezpečné nasadenie sa odporúča:
 \begin{itemize}
-	\item integrovaná bezdrôtová konektivita podľa danej série,
-	\item bohatý set periférií pre senzoriku a riadenie,
-	\item podporu pre spánkové režimy a nízku spotrebu,
-	\item kompatibilný vývojový ekosystém a dostupnú dokumentáciu.
+	\item aktivovať secure boot a flash encryption,
+	\item používať overené metódy OTA s podpismi firmware,
+	\item správne spravovať certifikáty a kľúče (dedikovaný secure element ak je požadované),
+	\item minimalizovať otvorené služby a expozíciu rozhraní.
 \end{itemize}
 
-Architektúra sa líši podľa konkrétneho čipu. Staršie modely používajú Xtensa jadrá, novšie série prechádzajú na RISC-V. To je dôležité najmä pri výbere toolchainu, pri použití knižníc a pri odhadovaní výkonu.
+\subsection*{Měření výkonu a profilovanie}
+Pri optimalizácii systémov je vhodné merať energetickú spotrebu (napr. pomocou prúdových sond a osciloskopu) a latenciu kritických operácií. ESP‑IDF obsahuje nástroje na trace a profiling, ktoré pomáhajú identifikovať úzke miesta.
 
-\subsection*{Vývojové prostredia}
-K najpoužívanejším nástrojom patria ESP-IDF ako oficiálny framework, Arduino core for ESP32, PlatformIO a tiež MicroPython. Vo väčších projektoch sa často volí ESP-IDF, pretože poskytuje najpriamejší prístup k perifériám, sieťovým službám a aktualizáciám firmvéru.
-
-\subsection*{Periférie v praxi}
-ESP32 rodina je zaujímavá tým, že okrem základných GPIO ponúka aj rozhrania, ktoré sa v embedded projektoch používajú veľmi často:
-
-\begin{itemize}
-	\item \textbf{UART} pre debugovanie a sériovú komunikáciu,
-	\item \textbf{I2C} pre senzory a displeje,
-	\item \textbf{SPI} pre rýchle periférie a pamäte,
-	\item \textbf{I2S} pre audio a streamované dáta,
-	\item \textbf{PWM / LED PWM / MCPWM} pre LED, motory a časovo presné výstupy,
-	\item \textbf{ADC / DAC} pre analógové merania,
-	\item \textbf{TWAI/CAN}, \textbf{RMT}, \textbf{USB} alebo touch periférie podľa konkrétnej série.
-\end{itemize}
-
-\subsection*{Použitie v projektoch}
-V projektoch sa ESP32 používa na edge processing, riadenie senzorov, bezdrôtové brány, lokálne webové rozhrania aj komunikáciu s cloudom. Vďaka tomu sa hodí na rýchle prototypovanie aj na zariadenia, ktoré potrebujú dlhodobú a stabilnú prevádzku.
-
-\subsection*{Čo si z tejto kapitoly odniesť}
-Pre zvyšok skrípt je dôležité hlavne to, že ESP32 nie je jeden čip, ale platforma s viacerými rodinami a rozdielnymi prioritami. Niektoré série sú vhodné na klasické Wi-Fi zariadenia, iné sa zameriavajú na nízku spotrebu, audio, HMI alebo na siete Thread, Zigbee a BLE. Tento výber potom priamo určuje, ktoré periférie a aký štýl programovania sa v projekte oplatí použiť.
-
-Na detailné technické parametre a príklady kódu odkazujeme na datasheet a oficiálnu dokumentáciu \cite{esp32_datasheet}.
+\subsection*{Záver}
+ESP32 poskytuje flexibilnú platformu pre široké spektrum IoT aplikácií, avšak efektívne využitie vyžaduje pochopenie jeho interných mechanizmov — správy napájania, DMA, bezpečnostných prvkov a správnej integrácie rádiovej vrstvy. V nasledujúcich kapitolách ukážeme tieto princípy na konkrétnych príkladoch.

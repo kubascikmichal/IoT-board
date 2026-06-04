@@ -1,0 +1,70 @@
+% Komunikačné protokoly v IoT
+\section{Komunikačné protokoly}
+
+V tejto kapitole sú podrobne rozpracované protokoly a komunikačné mechanizmy, ktoré sú bežne použité v IoT systémoch. Výber konkrétneho protokolu závisí od požiadaviek aplikácie (energetická náročnosť, latencia, spoľahlivosť, šírka pásma, bezpečnosť a škálovateľnosť). Nižšie sú popísané vlastnosti, prevádzkové režimy a návrhové kompromisy pre vybrané protokoly.
+
+\subsection{MQTT}
+
+MQTT (Message Queuing Telemetry Transport) je ľahký publish/subscribe protokol postavený nad TCP/IP, optimalizovaný pre nízku šírku pásma a obmedzené zariadenia. Architektúra zahŕňa vydavateľov (publishers), odoberateľov (subscribers) a sprostredkovateľa (broker).
+
+Kľúčové vlastnosti:
+\begin{itemize}
+  \item QoS (Quality of Service) úrovne: 0 (najneskôr raz), 1 (aspoň raz), 2 (presne raz) — každá úroveň prináša rozdielnu réžiu a zložitosť implementácie.
+  \item Retained správy: broker môže uchovávať poslednú hodnotu pre dané téma a odoslať ju novým odberateľom.
+  \item Last Will and Testament: umožňuje signalizovať náhly odchod klienta.
+  \item Prenos nad TCP s voliteľným TLS pre zabezpečenie šifrovania a overenia identity.
+\end{itemize}
+
+Návrhové úvahy: MQTT je vhodný pre telemetriu a scenáre so sporadickými aktualizáciami; nedostatky zahŕňajú závislosť na spojenom TCP kanáli a možnú potrebu správy brokerov pre škálovanie.
+
+\subsection{CoAP}
+
+CoAP (Constrained Application Protocol) je protokol navrhnutý pre obmedzené zariadenia a siete, pracujúci nad UDP a sledujúci štýl REST (representational state transfer). Jeho základné mechanizmy zahŕňajú správy typu Confirmable (potvrdzované) a Non-confirmable, a podporu pozorovania (Observe) proaktívne zasielajúce aktualizácie.
+
+Kľúčové vlastnosti:
+\begin{itemize}
+  \item Nízka režijná réžia vďaka UDP a kompaktnému formátu hlavičky.
+  \item Podpora metód podobných HTTP: GET, POST, PUT, DELETE.
+  \item Možnosť zabezpečenia pomocou DTLS (Datagram TLS) alebo OSCORE (Object Security for Constrained RESTful Environments).
+\end{itemize}
+
+Návrhové úvahy: CoAP je vhodný tam, kde je potrebná REST‑ová interakcia pri nízkej režii, napríklad pri komunikácii medzi senzorom a lokálnym bránovým zariadením. Vzhľadom na použitie UDP je potrebné riešiť spoľahlivosť a poradie správ aplikačne tam, kde to záleží.
+
+\subsection{HTTP/REST a WebSocket}
+
+HTTP/REST je štandardný protokol pre webové služby a často sa používa v IoT pri integrácii so servermi a cloudovými rozhraniami. Nevýhodou je vyššia režijná záťaž (TCP, hlavičky) v porovnaní s MQTT a CoAP.
+
+WebSocket poskytuje perzistentné obojsmerné spojenie nad TCP, vhodné pre real‑time dashboardy a ovládanie zariadení s nízkou latenciou. Pre nízkoenergetické zariadenia sú tieto protokoly menej vhodné bez proxy alebo brány, ktorá agreguje komunikáciu.
+
+\subsection{Narrowband a LPWAN technológie: LoRaWAN, NB‑IoT, Sigfox}
+
+LoRaWAN je sieťová vrstva postavená nad moduláciou LoRa, vhodná pre dlhý dosah a nízku spotrebu energie. Podporuje tri triedy zariadení (A,B,C) s rôznymi režimami prijímania, adaptívne riadenie výkonu (ADR) a režimy prispôsobenia prenosovej rýchlosti.
+
+NB‑IoT (Narrowband IoT) a Sigfox sú sieťové technológie poskytované mobilnými/operátorskými infraštruktúrami s dôrazom na nízku spotrebu, dlhú životnosť batérií a veľké pokrytie. NB‑IoT poskytuje lepšiu priepustnosť a integráciu s mobilnými sieťami než Sigfox.
+
+Návrhové úvahy: LPWAN technológie sú vhodné pre scenáre s nízkou frekvenciou zasielania údajov a veľkým dosahom, nie sú vhodné pre aplikácie s vysokými nárokmi na latenciu alebo vysokú priepustnosť.
+
+\subsection{Bluetooth Low Energy (BLE) a Zigbee}
+
+BLE poskytuje nízku spotrebu pri krátkom dosahu a model GATT (Generic Attribute Profile) na organizáciu služieb a charakteristík. BLE je vhodné pre nositeľné zariadenia a lokálne senzory, pričom nové verzie zlepšujú prenosovú rýchlosť a energetickú efektívnosť.
+
+Zigbee je mesh‑orientovaná sieťová technológia bežne používaná v domácich automatizáciách; podporuje samoliečenie siete a distribuované smerovanie. Oba štandardy majú vlastné bezpečnostné mechanizmy (pairing, link keys), ktoré je potrebné správne implementovať.
+
+\subsection{6LoWPAN, Thread a IPv6}
+
+6LoWPAN umožňuje prenos IPv6 paketov cez nízkopásmové rádiové siete (IEEE 802.15.4), čím poskytuje možnosť priamej adresovateľnosti zariadení a používaniu štandardných protokolov IPv6. Thread stavia na 6LoWPAN a poskytuje mesh‑funkcionalitu s bezpečnosťou na sieti.
+
+\subsection{Bezpečnostné aspekty protokolov}
+
+Pri navrhovaní IoT riešení je rozhodujúce zabezpečiť ochranu dát a integritu komunikácie. Základné odporúčania:
+\begin{itemize}
+  \item Používať šifrovanie vrstvy transportu (TLS/DTLS) alebo aplikačné zabezpečenie (OSCORE).
+  \item Overovať a autorizovať zariadenia pomocou silných kľúčov alebo certifikátov; vyhýbať sa statickým, nezabezpečeným kľúčom v zariadení.
+  \item Implementovať aktualizácie firmvéru zabezpečeným spôsobom (signed firmware, over‑the‑air aktualizácie s overením integrity).
+\end{itemize}
+
+\subsection{Kritériá výberu protokolu}
+
+Pri rozhodovaní o voľbe protokolu je vhodné zvážiť nasledujúce kritériá: energetická náročnosť, spoľahlivosť (QoS), latencia, dostupná šírka pásma, režijné náklady, požadovaná úroveň zabezpečenia, topológia siete a požiadavky na škálovanie.
+
+V nasledujúcich kapitolách sú tieto protokoly demonštrované na konkrétnych príkladoch a implementáciách na platforme ESP32 a prostredí MicroPython.

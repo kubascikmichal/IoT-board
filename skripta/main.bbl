@@ -39,28 +39,6 @@
     \field{year}{2024}
   \endentry
 
-  \entry{esp32_datasheet}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=SE}{%
-         family={Systems},
-         familyi={S\bibinitperiod},
-         given={Espressif},
-         giveni={E\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{SE1}
-    \strng{fullhash}{SE1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2020}
-    \field{labeldatesource}{}
-    \field{sortinit}{S}
-    \field{sortinithash}{S}
-    \field{note}{https://www.espressif.com}
-    \field{title}{ESP32 Series Datasheet}
-    \field{year}{2020}
-  \endentry
-
   \entry{esp32_products}{misc}{}{}
     \name{author}{1}{}{%
       {{hash=SE}{%
@@ -81,30 +59,6 @@
     \field{note}{https://www.espressif.com/en/products/socs}
     \field{title}{ESP32 SoCs}
     \field{year}{2026}
-  \endentry
-
-  \entry{wolf2012embedded}{book}{}{}
-    \name{author}{1}{}{%
-      {{hash=WFV}{%
-         family={Wolf},
-         familyi={W\bibinitperiod},
-         given={Frank\bibnamedelima V.},
-         giveni={F\bibinitperiod\bibinitdelim V\bibinitperiod},
-      }}%
-    }
-    \list{publisher}{1}{%
-      {CRC Press}%
-    }
-    \strng{namehash}{WFV1}
-    \strng{fullhash}{WFV1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{labelyear}{2012}
-    \field{labeldatesource}{}
-    \field{sortinit}{W}
-    \field{sortinithash}{W}
-    \field{title}{Embedded Systems: Architecture, Programming and Design}
-    \field{year}{2012}
   \endentry
 \enddatalist
 \endinput

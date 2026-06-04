@@ -2,7 +2,7 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[slovak]{babel}
+\usepackage[slovak,shorthands=off]{babel}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{tikz}
@@ -37,11 +37,16 @@
 \tableofcontents
 \clearpage
 
+\input{sections/uvod.tex}
+\clearpage
+
 \input{sections/embedded_systems.tex}
 \clearpage
 \input{sections/embedded_systems_detailed.tex}
 \clearpage
 \input{sections/iot_topologies.tex}
+\clearpage
+\input{sections/protokoly.tex}
 \clearpage
 \input{sections/esp32.tex}
 \clearpage

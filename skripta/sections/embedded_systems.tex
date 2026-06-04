@@ -1,11 +1,9 @@
 \section{Úvod}
 \label{sec:embedded-systems}
 
-Tento text predstavuje základné pojmy a kontext pre prácu s IoT a vstavanými systémami. IoT (Internet vecí) označuje súbor zariadení, ktoré sú vybavené senzormi, výpočtovým jadrom a sieťovou konektivitou s cieľom zbierať, spracovávať a zdieľať informácie. Vstavané systémy sú pritom výpočtové jednotky navrhnuté tak, aby spoľahlivo a efektívne vykonávali úlohy so špecifickými obmedzeniami — nízka spotreba, malá veľkosť, limitovaná pamäť a často pevne stanovené rozhrania.
+Táto kapitola poskytuje systematický prehľad základných konceptov vstavaných systémov s dôrazom na ich aplikácie v kontexte Internetu vecí. Definujeme vstavaný systém ako samostatnú výpočtovú jednotku, ktorá je špeciálne navrhnutá na vykonávanie úloh s obmedzeniami v oblasti pamäte, výpočtového výkonu, energetickej spotreby a fyzických rozmerov.
 
-Na úrovni návrhu sa zariadenie typicky skladá z troch vrstiev: (1) senzorickej vrstvy (zber údajov), (2) riadiacej vrstvy (spracovanie a rozhodovanie) a (3) komunikačnej/výstupnej vrstvy (odovzdanie výsledkov alebo spúšťanie akcií). Táto modularita uľahčuje navrhnúť systém, ktorý je rozšíriteľný, testovateľný a bezpečný.
-
-V tejto knihe najprv uvedieme základné princípy vstavaných systémov a hardvérové komponenty, potom prejdeme k praktickej platforme ESP32 a programovaniu v MicroPythone. Následné kapitoly obsahujú návod na nasadenie, sieťové topológie pre IoT, návrh energeticky efektívnych riešení a súbor praktických príkladov a testovacích postupov.
+Typická architektúra IoT zariadenia sa skladá z niekoľkých logických vrstiev: (1) zber dát (senzory), (2) lokálne spracovanie a riadenie (mikrokontrolér alebo systém na čipe), (3) komunikačná vrstva (radiové rozhranie a protokoly) a (4) aplikačná/užívateľská vrstva (cloud, vizualizácia, API). Takéto vrstvenie uľahčuje modulárny návrh, testovateľnosť a možnosť opätovného použitia komponentov.
 
 \begin{figure}[h]
 \centering
@@ -14,56 +12,45 @@ V tejto knihe najprv uvedieme základné princípy vstavaných systémov a hardv
 	block/.style={draw, rounded corners, minimum width=2.9cm, minimum height=1cm, align=center},
 	arrow/.style={-{Stealth[length=2.2mm]}, thick}
 ]
-	\node[block] (sensor) {Senzory\\vstup};
-	\node[block, right=of sensor] (control) {Riadiaca jednotka\\spracovanie a logika};
-	\node[block, right=of control] (net) {Komunikácia\\a IoT služba};
-	\node[block, below=of control] (actuator) {Akčné členy\\výstup};
-	\node[block, above=of net] (user) {Používateľ / cloud\\monitoring};
+	\node[block] (sensor) {Senzory\\(zber dát)};
+	\node[block, right=of sensor] (control) {Riadiaca jednotka\\(spracovanie)};
+	\node[block, right=of control] (net) {Komunikačná vrstva\\(rádio, brána)};
+	\node[block, below=of control] (actuator) {Akčné členy\\(výstup)};
+	\node[block, above=of net] (user) {Cloud / Užívateľske rozhranie};
 
-	\draw[arrow] (sensor) -- node[above, font=\small]{dáta} (control);
-	\draw[arrow] (control) -- node[above, font=\small]{stav a udalosti} (net);
-	\draw[arrow] (net) -- node[right, font=\small]{príkazy} (user);
-	\draw[arrow] (control) -- node[right, font=\small]{riadenie} (actuator);
-	\draw[arrow] (user) |- node[pos=0.25, right, font=\small]{spätná väzba} (control);
+	\draw[arrow] (sensor) -- node[above, font=\small]{meranie} (control);
+	\draw[arrow] (control) -- node[above, font=\small]{telemetria} (net);
+	\draw[arrow] (net) -- node[right, font=\small]{telemetria / API} (user);
+	\draw[arrow] (control) -- node[right, font=\small]{aktuátory} (actuator);
+	\draw[arrow] (user) |- node[pos=0.25, right, font=\small]{riadiace príkazy} (control);
 \end{tikzpicture}
-\caption{Zjednodušená schéma vstavaného IoT riadiaceho systému.}
+\caption{Bloková schéma typického IoT zariadenia.}
 \end{figure}
 
-Kľúčové koncepty vstavaných systémov sa dajú čítať aj z pohľadu hardvéru a z pohľadu softvéru.
+Kľúčové aspekty návrhu možno rozdeliť do dvoch zorných uhlov: hardvérového a softvérového. V hardvéri ide najmä o výber mikrokontroléra, periférií, napájacieho reťazca a komunikačných rozhraní. V softvéri ide o architektúru firmvéru, plánovanie úloh, spracovanie prerušení, manažment pamäte a zabezpečenie.
 
 \subsection*{Hardvérové prvky}
-Mikrokontrolér je iba jedna časť celku. V praxi ho dopĺňajú senzory, akčné členy, pamäť, napájanie, ochranné prvky a komunikačné rozhrania. Medzi najčastejšie periférie patria ADC pre analógové merania, DAC pre analógový výstup, PWM pre riadenie jasu alebo výkonu, časovače, čítače impulzov, GPIO a jednotky pre sériovú komunikáciu.
+Mikrokontrolér (MCU) je centrálny komponent, no kompletný systém zahŕňa senzory, aktuátory, pasívne a aktívne ochranné obvody, kondenzátory pre vyhladzovanie napätia a mechanické prvky. Dôležitými perifériami sú ADC (analogovo‑digitálne prevodníky), DAC (digitálno‑analogové prevodníky), PWM (generovanie pulsačnej modulácie), časovače, sériové rozhrania (I2C, SPI, UART) a špecializované moduly ako CAN, USB alebo RMT.
 
-\subsection*{Komunikačné protokoly a periférie}
-Na doske plošných spojov sa často používajú nasledujúce rozhrania:
+Pri výbere sú dôležité metriky: výkon na spotrebované jadro (energy per operation), dostupná RAM a flash, počet a typ periférií, podpora nízkoenergetických režimov a podpora požadovaných rádiových rozhraní (Wi‑Fi, BLE, LoRa atď.).
 
-\begin{itemize}
-	\item \textbf{I2C} pre senzory, expandéry vstupov a displeje; používa dve vodiče a adresovanie zariadení.
-	\item \textbf{SPI} pre rýchlejšiu komunikáciu s displejmi, pamäťami alebo prevodníkmi.
-	\item \textbf{I2S} pre digitálny zvuk, mikrofóny a audio prevodníky.
-	\item \textbf{UART} pre servisnú komunikáciu, ladenie a prepojenie s inými modulmi.
-	\item \textbf{PWM} pre stmievanie LED, riadenie motorov a generovanie tónov.
-	\item \textbf{ADC a DAC} pre prácu s analógovým signálom.
-	\item \textbf{TWAI/CAN}, \textbf{SDIO}, \textbf{USB} alebo \textbf{RMT} tam, kde je potrebný robustnejší prenos alebo presné časovanie.
-\end{itemize}
+\subsection*{Softvérové modely}
+Firmvér môže byť implementovaný buď v forme jednoduchej hlavnej slučky (superloop), alebo nad RTOS (Real‑Time Operating System). Superloop je jednoduchý a predvídateľný, vhodný pre malé projekty; RTOS prináša plánovanie priorít, synchronizáciu úloh a deterministické správanie potrebné pri hard‑real‑time požiadavkách.
 
-Tieto rozhrania sú dôležité preto, že prepojujú mikrokontrolér s reálnym svetom. Výber konkrétneho protokolu závisí od rýchlosti, počtu zariadení na zbernici, požiadaviek na časovanie a od typu pripojenej periférie.
+Pri návrhu softvéru je potrebné venovať osobitnú pozornosť správe prerušení (ISR by mali byť čo najkratšie), ochrane kritických sekcií (mutexy, semafory), alokácii pamäte (minimalizovať dynamickú alokáciu v kritickom kóde) a mechanizmom obnovy po chybách (watchdog, persistencia stavu).
 
-\subsection*{Softvérový model}
-Vstavaný firmvér môže bežať bez operačného systému, kde hlavný program obieha v slučke a priebežne obsluhuje vstupy, alebo nad RTOS, ktorý rozdeľuje úlohy na samostatné vlákna a plánuje ich beh. Bez ohľadu na zvolený model je dôležité správne spracovanie prerušení, časovačov, oneskorení a správy energie.
+\subsection*{Výber rozhraní a periférií}
+Voľba medzi I2C, SPI, UART, I2S a ďalšími rozhraniami závisí od rýchlostných požiadaviek, vzdialenosti medzi komponentmi, počtu zariadení na zbernici a citlivosti na rušenie. Výber tiež ovplyvňuje softvérová komplexita: napríklad SPI môže vyžadovať vyšší počet vodičov a logiku pre výber čipu, avšak poskytuje vyššiu priepustnosť.
 
-\subsection*{Prečo je to dôležité pre IoT}
-IoT zariadenie musí často kombinovať lokálnu logiku s komunikáciou do siete. To znamená, že okrem samotného merania a riadenia musí vedieť aj ukladať stav, posielať dáta na server, prijímať príkazy a bezpečne pracovať s identitou zariadenia. V ďalších kapitolách sa preto prepája hardvér, sieťová komunikácia a programovanie v MicroPythone na platforme ESP32.
+V priemyselných aplikáciách sa často využíva CAN/TWAI pre jeho robustnosť a deterministické vlastnosti; v audio aplikáciách je preferované I2S pre synchronizáciu vzoriek.
 
-\subsection*{Nasledujúce kapitoly}
-Po úvode nasleduje podrobná kapitola venovaná návrhu vstavaných systémov (architektúra, výber mikrokontroléra, napájanie, časovanie a softvérové modely). Ďalšia časť sa zameriava na IoT a siete — popíšeme bežné topológie, komponenty brány (gateway), edge vs. cloud spracovanie a bezpečnostné aspekty. Praktická časť potom ukáže prácu s platformou ESP32 a MicroPythonom, vrátane inštalácie cez Thonny a ukážkových projektov.
+\subsection*{Energetické aspekty a správa napájania}
+Energetická optimalizácia zahŕňa viacero úrovní: výber efektívnych komponentov, minimalizáciu aktivít CPU, adaptívne správanie rádií (batching, dlhšie intervaly zasielania), a využívanie hlbokých spánkových režimov. Návrh napájacieho reťazca musí riešiť transientné prúdy (napr. pri zapnutí Wi‑Fi), filtráciu a ochranu.
 
-\subsection*{Napájanie a spoľahlivosť}
-Pri reálnom nasadení treba riešiť aj spotrebu, reset správanie, watchdog, ochranu proti výpadkom napájania a vhodné spánkové režimy. V batériových zariadeniach býva dôležitý aj návrh zobúdzacích podmienok a minimalizácia spotreby v nečinnosti.
+\subsection*{Bezpečnosť a spoľahlivosť}
+Bezpečnostné mechanizmy by mali zahŕňať autentifikáciu zariadení, šifrovanie komunikácie (TLS/DTLS), bezpečné ukladanie kľúčov (napr. v dedikovanom bezpečnostnom module) a zabezpečený mechanizmus aktualizácií firmvéru (signed OTA).
 
-\subsection*{Bezpečnosť}
-S rastúcim počtom pripojených zariadení rastie aj význam bezpečnosti. Do návrhu patrí autentifikácia zariadení, ochrana komunikácie, rozumné spravovanie kľúčov a kontrola toho, kto môže meniť stav zariadenia alebo čítať jeho dáta.
+Spoľahlivosť zahŕňa návrh na zvládanie chýb: watchdogy, redundanciu kritických prvkov, logovanie chýb a telemetriu pre diagnostiku. Súčasťou návrhu môže byť aj plán údržby a mechanizmus rollbacku pri neúspešnej aktualizácii.
 
-V literatúre nájdete prehľad architektúr a konkrétnych návrhov od výrobcov mikrokontrolérov \cite{wolf2012embedded}.
-
-V literatúre nájdete prehľad architektúr a konkrétnych návrhov od výrobcov mikrokontrolérov \cite{wolf2012embedded}.
+\subsection*{Záver}
+Táto kapitola poskytla koncepčný rámec pre ďalšie, detailnejšie kapitoly, ktoré rozpracujú konkrétne architektonické rozhodnutia, návrh napájania, časovanie a praktickú implementáciu na platforme ESP32.

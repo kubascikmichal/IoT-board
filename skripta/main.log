@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.19)  19 MAY 2026 17:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.28)  4 JUN 2026 15:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -62,11 +62,7 @@ Package babel Info: Importing font and identification data for slovak
 
 (/usr/share/texlive/texmf-dist/tex/generic/babel-slovak/slovak.ldf
 Language: slovak 2008/07/06 v3.1a Slovak support from the babel system
-Package babel Info: Making ^ an active character on input line 123.
-Package babel Info: Making " an active character on input line 126.
-Package babel Info: Making ' an active character on input line 129.
 \cs@wordlen=\count285
-Package babel Info: Making - an active character on input line 294.
 ))
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2026-04-24 v7.01q Hypertext links for LaTeX
@@ -851,7 +847,10 @@ Package csquotes Info: ... found 'babel' package.
 Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'slovak'.
 
-No file main.aux.
+(./main.aux
+Package babel Info: 'slovak' activates 'slovak' shorthands.
+(babel)             Reported on input line 11.
+)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
@@ -872,11 +871,11 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
 LaTeX Font Info:    ... okay on input line 35.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 35.
 LaTeX Font Info:    ... okay on input line 35.
-Package babel Info: 'slovak' activates 'slovak' shorthands.
-(babel)             Reported on input line 35.
 Package hyperref Info: Link coloring OFF on input line 35.
+ (./main.out) (./main.out)
 \@outlinefile=\write5
 \openout5 = `main.out'.
+
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -949,9 +948,8 @@ Package biblatex Info: Data encoding 'utf8' specified.
 \openout4 = `main-blx.bib'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'main.bbl' not found.
-
-No file main.bbl.
+Package biblatex Info: ... file 'main.bbl' found.
+ (./main.bbl)
 Package biblatex Info: Reference section=0 on input line 35.
 Package biblatex Info: Reference segment=0 on input line 35.
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -960,32 +958,146 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <8> on input line 37.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 37.
-No file main.toc.
+
+(./main.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 5.
+ [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-di
+st/fonts/enc/dvips/cm-super/cm-super-t1.enc}])
 \tf@toc=\write6
 \openout6 = `main.toc'.
 
-[1
+ [2]
+(./sections/uvod.tex) [3
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-di
-st/fonts/enc/dvips/cm-super/cm-super-t1.enc}]
-(./sections/embedded_systems.tex
-! Use of \pgfutil@next doesn't match its definition.
-l.27 	\draw[arrow] (user) |-
-                             node[pos=0.25, right, font=\small]{spÃ¤tnÃ¡ vÃ¤...
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] (./s
+ections/embedded_systems.tex
+Overfull \hbox (1.18033pt too wide) in paragraph at lines 33--34
+\T1/cmr/m/n/10.95 vod-níky), PWM (ge-ne-ro-va-nie pul-sa£-nej mo-du-lá-cie), £a
+-so-va£e, sé-ri-ové ro-z-hra-nia (I2C, SPI, UART)
+ []
 
-? 
-! Emergency stop.
-l.27 
-     
-End of file on the terminal!
+[4
 
- 
+]
+Overfull \hbox (36.97815pt too wide) in paragraph at lines 51--52
+\T1/cmr/m/n/10.95 Bezpe£nostné me-cha-nizmy by mali za-h¯¬a´ au-ten-ti-fi-ká-ci
+u za-ria-dení, ²if-ro-va-nie ko-mu-ni-ká-cie (TLS/DTLS),
+ []
+
+) [5] (./sections/embedded_systems_detailed.tex
+
+Package pgf Warning: Returning node center instead of a point on node border. D
+id you specify a point identical to the center of node ``cloud''? on input line
+ 25.
+
+
+Package pgf Warning: Returning node center instead of a point on node border. D
+id you specify a point identical to the center of node ``mcu''? on input line 2
+5.
+
+[6
+
+]) [7] (./sections/iot_topologies.tex
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Overfull \hbox (28.15009pt too wide) in paragraph at lines 85--86
+ [][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[8
+
+] [9]) [10] [11] (./sections/protokoly.tex [12
+
+]
+Overfull \hbox (16.42752pt too wide) in paragraph at lines 43--44
+[]\T1/cmr/m/n/10.95 NB[]IoT (Nar-ro-wband IoT) a Sig-fox sú sie-´ové tech-no-ló
+-gie po-sky-to-vané mo-bil-nými/operátorskými
+ []
+
+
+Overfull \hbox (3.01857pt too wide) in paragraph at lines 63--64
+[]\T1/cmr/m/n/10.95 Implementova´ ak-tu-ali-zá-cie firm-véru za-bez-pe-£e-ným s
+pô-so-bom (sig-ned fir-mware, over[]the[]air
+ []
+
+) [13] (./sections/esp32.tex [14
+
+]) [15] (./sections/micropython.tex [16
+
+])
+[17] (./sections/examples.tex
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2025/11/14 1.11b listings language file
+) [18
+
+] [19]
+[20] [21
+
+] [22] [23
+
+] [24
+
+] [25
+
+] [26
+
+] [27
+
+] [28
+
+] [29
+
+] [30
+
+] [31] [32
+
+]) [33
+
+] [34
+
+]
+(./main.aux)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2026-03-20>
+ ***********
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: EDB96E0C0124E4A9E8526F200D4E43AB;9747.
+Package logreq Info: Writing requests to 'main.run.xml'.
+\openout1 = `main.run.xml'.
+
+ ) 
 Here is how much of TeX's memory you used:
- 30824 strings out of 469264
- 585112 string characters out of 5464390
- 1218145 words of memory out of 6000000
- 59272 multiletter control sequences out of 15000+600000
- 635364 words of font info for 56 fonts, out of 8000000 for 9000
+ 32245 strings out of 469264
+ 604684 string characters out of 5464390
+ 1549532 words of memory out of 6000000
+ 60231 multiletter control sequences out of 15000+600000
+ 639962 words of font info for 65 fonts, out of 8000000 for 9000
  46 hyphenation exceptions out of 8191
- 84i,8n,104p,1881b,809s stack positions out of 10000i,1000n,20000p,200000b,200000s
-!  ==> Fatal error occurred, no output PDF file produced!
+ 84i,8n,104p,1881b,2135s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr
+/share/texlive/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/cm-super/sfrm1095.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/cm-super/sfrm1200.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/cm-super/sfrm1728.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/cm-s
+uper/sfti1095.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/cm-super/sf
+tt1000.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/cm-super/sftt1095.
+pfb>
+Output written on main.pdf (34 pages, 369069 bytes).
+PDF statistics:
+ 893 PDF objects out of 1000 (max. 8388607)
+ 825 compressed objects within 9 object streams
+ 419 named destinations out of 1000 (max. 500000)
+ 413 words of extra memory for PDF output out of 10000 (max. 10000000)
+

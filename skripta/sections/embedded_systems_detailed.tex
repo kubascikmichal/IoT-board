@@ -31,114 +31,47 @@ Pri návrhu treba zvážiť:
 \begin{itemize}
 \item požadovaný výpočtový výkon a spotrebu,
 \item dostupnú pamäť (RAM a flash),
-\item rozhrania pre periférie (I2C, SPI, UART, ADC, PWM),
-\item potrebu reálneho času alebo plánovania úloh (RTOS vs. jednoduchá slučka),
-\item požiadavky na spoľahlivosť a dostupnosť.
 \end{itemize}
 
-\subsection{Výber mikrokontroléra}
-Pri výbere MCU zvážte prenosové rozhrania, dostupné periférie, podporu voľby napájania, CAD a vývojové nástroje. Dôležité sú tiež faktory ako dostupnosť knižníc, komunita a kompatibilita so zamýšľaným jazykom (MicroPython, C/C++).
+\subsection{Architektonický návrh a rozdelenie zodpovedností}
+Dobrá architektúra oddelí zber dát, lokálne spracovanie, komunikačnú vrstvu a aplikačnú logiku. Pre návrh je užitočné formalizovať požiadavky: latenciu, spoľahlivosť (SLA), energetické limity, bezpečnostné ciele a podmienky prevádzky. Na základe týchto požiadaviek sa volia komponenty a stratégiu rozdelenia výpočtovej záťaže medzi edge a cloud.
 
-Pri projektoch IoT bývajú obľúbené MCU s integrovanou Wi‑Fi/BLE (napr. ESP32), pre priemyselné aplikácie zase robustnejšie riešenia s CAN alebo ethernetom.
-
-\subsection{Komunikačné protokoly a periférie}
-Pre vstavané systémy je dôležité rozumieť tomu, čo jednotlivé protokoly prinášajú z pohľadu rýchlosti, zapojenia, adresovania a spoľahlivosti. Výber rozhrania ovplyvňuje nielen hardvér, ale aj zložitosť firmvéru, spotrebu a možnosti rozšírenia.
-
-\subsubsection*{I2C}
-I2C je dvojvodičová zbernica založená na linkách SDA a SCL. Typicky sa používa na pripojenie senzorov, malých displejov, RTC modulov a portových expandérov. Jeho výhodou je jednoduché zapojenie a viacero zariadení na jednej zbernici; obmedzením je kratší dosah, nutnosť pull-up rezistorov a citlivosť na kvalitu vodičov pri vyšších rýchlostiach.
-
-V praxi je vhodný tam, kde ide o malý počet periférií na jednej doske alebo v blízkom okolí mikrokontroléra. Ak potrebujeme spoľahlivé čítanie viacerých senzorov, I2C je často najjednoduchšia voľba.
-
-\subsubsection*{SPI}
-SPI je rýchle sériové rozhranie, ktoré používa signály SCLK, MOSI, MISO a jeden alebo viac výberových pinov CS. Hodí sa pre displeje, pamäte, rýchle prevodníky a periférie, ktoré vyžadujú vyššiu priepustnosť než I2C. Oproti I2C je zapojenie náročnejšie na počet vodičov, ale prenos býva stabilnejší a rýchlejší.
-
-Výhodou SPI je nízka režijná záťaž a dobré časovanie pri čítaní aj zápise. Preto sa používa pri častých aktualizáciách obrazovky, záznamových médiách alebo pri rýchlych dátových prevodníkoch.
-
-\subsubsection*{UART}
-UART je asynchrónne sériové rozhranie, ktoré pracuje s dvojicou Tx/Rx a spoločnou zemou. Používa sa na ladenie, sériové konzoly, komunikáciu s modulmi GPS, Bluetooth, GSM alebo inými mikrokontrolérmi. Jeho výhodou je jednoduchosť; nevýhodou je spravidla bod-bod komunikácia bez nativného adresovania.
-
-UART je vhodný, keď potrebujeme ľahký servisný kanál alebo výmenu príkazov medzi zariadeniami. Pri dlhších vedeniach a rušnom prostredí však treba riešiť úrovne signálu a elektromagnetickú odolnosť.
-
-\subsubsection*{I2S}
-I2S sa používa na digitálny audio prenos medzi mikrokontrolérom, mikrofónom, DAC alebo zosilňovačom. Prenos je synchronizovaný samostatným hodinovým signálom, čo je dôležité pri spracovaní zvuku v reálnom čase. V porovnaní s UART alebo I2C je orientovaný na presné časovanie audio dát.
-
-\subsubsection*{PWM, ADC a DAC}
-PWM je výstupná technika na simuláciu analógovej úrovne alebo riadenie výkonu. Používa sa na LED, motorčeky a bzučiaky. ADC naopak číta analógové napätie zo senzorov, ako sú fotorezistory, potenciometre alebo tlakové snímače. DAC generuje skutočné analógové napätie, ak ho MCU podporuje.
-
-Tieto bloky sú často súčasťou jedného projektu: ADC číta hodnotu zo senzora, MCU ju spracuje a PWM alebo DAC podľa nej ovláda výstup.
-
-\subsubsection*{TWAI/CAN, USB, SDIO a RMT}
-TWAI/CAN sa používa tam, kde je dôležitá robustnosť, viac uzlov a odolnosť voči rušeniu — typicky v automobiloch a priemysle. USB slúži na pripojenie k hostiteľovi, debug alebo emuláciu zariadenia. SDIO je vhodné pri práci s pamäťovými kartami alebo niektorými bezdrôtovými modulmi. RMT využívame tam, kde je potrebné presné generovanie alebo meranie impulzov, napríklad pri LED reťazcoch typu WS2812.
-
-\subsubsection*{Ako si vybrať správne rozhranie}
-I2C je vhodné pre jednoduché senzory a malé dosky, SPI pre rýchle periférie s vyššou priepustnosťou, UART pre servis a jednoduché moduly, I2S pre audio a CAN pre odolné priemyselné nasadenia. Výber rozhrania by mal vždy vychádzať z požadovanej rýchlosti, dĺžky vedenia, rušenia, počtu zariadení a dostupných pinov.
-
-\subsection{Tok dát v zariadení}
-Bežný tok dát sa dá opísať ako kruh: senzor zachytí fyzikálnu veličinu, MCU ju spracuje, rozhodne o akcii, pošle výsledok do periférie alebo siete a následne čaká na ďalšiu zmenu stavu. V menších systémoch prebieha tento cyklus v jednej slučke, vo väčších projektoch sa rozdeľuje na úlohy, fronty alebo udalosti.
-
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[
-node distance=10mm and 13mm,
-block/.style={draw, rounded corners, minimum width=2.9cm, minimum height=0.9cm, align=center},
-arrow/.style={-{Stealth[length=2.2mm]}, thick}
-]
-\node[block] (in) {Vstup\\senzory};
-\node[block, right=of in] (proc) {Spracovanie\\a rozhodnutie};
-\node[block, right=of proc] (out) {Výstup\\LED, motor, web};
-\node[block, below=of proc] (log) {Logovanie\\a telemetria};
-\draw[arrow] (in) -- node[above, font=\small]{hodnoty} (proc);
-\draw[arrow] (proc) -- node[above, font=\small]{príkaz} (out);
-\draw[arrow] (proc) -- node[right, font=\small]{stav} (log);
-\draw[arrow] (log) -| node[pos=0.25, below, font=\small]{analýza} (proc);
-\end{tikzpicture}
-\caption{Tok dát v jednoduchom vstavanom systéme.}
-\end{figure}
-
-\subsection{WS2812B a riadiaci protokol}
-WS2812B je adresovateľná RGB LED, ktorá nepoužíva klasické sériové rozhranie typu I2C alebo SPI. Namiesto toho prijíma jednovodičový tok presne časovaných impulzov, kde sa informácia prenáša dĺžkou logickej nuly a jednotky. Každý pixel očakáva 24 bitov dát v poradí G-R-B a po prijatí vlastných bitov posúva zvyšok reťazca ďalej.
-
-Z pohľadu mikrokontroléra je kľúčové presné časovanie: typicky sa vysiela symbol pre \emph{0} a symbol pre \emph{1} s rozdielnou šírkou pulzu, pričom tolerancia je malá. Preto sa pri implementácii často používa hardvérový periférny blok, napríklad RMT na ESP32, alebo priamo knižnica, ktorá zabezpečí presné generovanie časovania bez prerušovania inými úlohami.
-
-Praktický význam protokolu je v tom, že každý pixel sa správa ako „posuvný register“: prvých 24 bitov si ponechá pre seba a zvyšok odosiela ďalej. Po odoslaní dát je potrebná reset/pause medzera, aby všetky LED zaráz prijali novú farbu. Tento prístup je vhodný pre svetelné pásy, ambientné osvetlenie a stavové indikátory, ale vyžaduje stabilné napájanie a dobré vedenie dátového signálu.
-
-\subsubsection*{Prečo sa používa RMT alebo špeciálna periféria}
-Ak by sa časovanie generovalo iba softvérovo, ľahko vzniknú chyby pri prerušení alebo pri vysokej záťaži CPU. Hardvérová periféria udrží presnosť impulzov aj počas iných úloh, čo je dôležité najmä pri dlhších reťazcoch a vyššom počte pixelov.
-
-\subsection{Napájanie a správa energie}
-Napájací návrh často rozhoduje o úspechu projektu. Kľúčové prvky:
+\subsection{Výber procesorovej platformy}
+Okrem základných kritérií (CPU, pamäť, periférie) by mal návrh zohľadniť:
 \begin{itemize}
-\item stabilné napájanie s ochranou proti prepätiu a prepólovaniu,
-\item vhodné DC–DC meniče alebo LDO podľa požiadaviek na účinnosť a šum,
-\item rezervy pre spúšťacie prúdy (Wi‑Fi pri pripojení môže krátkodobo zvýšiť odber),
-\item návrh batériového režimu: meranie stavu batérie, režimy spánku, zobudenie z prerušení.
+	\item Ekosystémový support (toolchain, debug nástroje, knižnice),
+	\item Dostupnosť bezpečnostných modulov (TPM, secure element),
+	\item Podporu energeticky efektívnych režimov (deep sleep, power domains),
+	\item Certifikačné požiadavky a prevádzkové prostredie (teplota, vlhkosť).
 \end{itemize}
 
-Optimalizácia spotreby zahŕňa zníženie aktivít CPU, zhadzovanie periférií do nízkeho spotrebného režimu a minimalizovanie rádiovej komunikácie (agregácia dát, dlhšie intervaly odosielania).
+\subsection{Časovanie, plánovanie a deterministické správanie}
+Pri systémoch s real‑time požiadavkami je potrebné definovať časové záväzky a garantované latencie. Plánovanie úloh môže byť preemptívne (RTOS) alebo kooperatívne; výber algoritmu plánovania (fixed priority, EDF) závisí od požiadaviek na deterministickosť a jednoduchosti analýzy.
 
-\subsection{Časovanie a real‑time požiadavky}
-Ak je systém závislý na presnom časovaní (riadenie motorov, audio, merania s presným vzorkovaním), je potrebné použiť hardvérové časovače, DMA a prípadne RTOS. IRQ handlery by mali byť stručné a nastavovať príznaky, nie spúšťať dlhé operácie.
-
-\subsection{Softvérové modely}
-Existujú dva základné prístupy: jednoduchá hlavná slučka (superloop) a systém založený na RTOS. Superloop je ľahký a vhodný pre malé úlohy, RTOS poskytuje plánovanie, synchronizáciu a izoláciu úloh, čo pomáha riešiť zložité systémy s viacerými časovo kritickými komponentmi.
-
-Pri MicroPythone je bežné kombinovať jednoduchú štruktúru s časovačmi a asynchrónnym I/O (uasyncio) pre spracovanie viacerých udalostí.
-
-\subsection{Testovanie a ladenie}
-Dôležité sú nasledujúce nástroje a postupy:
+\subsection{Verifikácia a testovanie}
+Okrem tradičných testovacích postupov (jednotkové testy, integračné testy, systémové testy) je dôležité zaviesť:
 \begin{itemize}
-\item sériová konzola a REPL pre interaktívne skúšanie,
-\item logging s rôznymi úrovňami (info, warning, error),
-\item simulácia periférií pri vývoji softvéru,
-\item jednotkové testy niektorých logických blokov, ak sú možné,
-\item hardvérové testy: meranie napájacích profilov, testy EMC a teplotné skúšky v extrémoch.
+	\item návrhové overenie (model checking, statická analýza),
+	\item testovanie za hraníc prevádzkových podmienok (stres, teplota),
+	\item overenie elektromagnetickej kompatibility (EMC/EMI),
+	\item bezpečnostné testy (penetration testing, fuzzing komunikačných rozhraní).
 \end{itemize}
 
-\subsection{Bezpečnosť a spoľahlivosť}
-Bezpečnosť musí byť súčasťou návrhu od začiatku: autentifikácia zariadenia, bezpečné ukladanie kľúčov, šifrovanie komunikácie a pravidelné aktualizácie firmvéru. Spoľahlivosť zahŕňa watchdog, spracovanie chýb, redundantné riešenia tam, kde je to potrebné, a robustné správanie pri výpadku siete.
+\subsection{Regulačné a normatívne aspekty}
+Pri návrhu produktov pre masové nasadenie treba zohľadniť platné normy (CE, FCC, RED) a priemyselné štandardy. Dôležité sú tiež regulácie týkajúce sa rádiového spektra a environmentálne požiadavky (RoHS).
 
-\subsection{Nasadenie a údržba}
-Pri nasadení hromadných zariadení zvažujeme OTA aktualizácie, monitorovanie stavu zariadení a mechanizmy rollbacku pri zlyhaní aktualizácie. Systém by mal zaznamenávať telemetriu, ktorá pomôže pri diagnostike a plánovaní údržby.
+\subsection{EMC/EMI a fyzické návrhy}
+Dobre navrhnutá doska plošných spojov (PSP) a napájací reťazec minimalizujú emisné a imunitné problémy. Odporúčania zahŕňajú: oddelenie analógových a digitálnych pôd, vhodné rozmiestnenie kondenzátorov, stínovanie a sledovanie impedancií pri vysokofrekvenčných linkách.
+
+\subsection{Napájanie a energetická efektívnosť}
+Okrem komponentov napájacieho reťazca treba navrhnúť stratégiu správy energie: profilovanie spotreby, použitie adaptívnych intervalov zasielania, hibernáciu periférií a optimalizáciu algoritmov z hľadiska energie. Pre batériové systémy je kľúčové navrhnúť meranie stavu batérie a spoľahlivé mechanizmy obnovenia po vybití.
+
+\subsection{Bezpečnostné vzory}
+Odporúčané postupy zahŕňajú: bezpečné zavádzanie kľúčov pri výrobných procesoch, hardvérové zabezpečenie kľúčov (secure element), používanie overených kryptografických knižníc, zabezpečený proces OTA aktualizácií a pravidelnú bezpečnostnú údržbu.
+
+\subsection{Nasadenie a životný cyklus produktu}
+Pri plánovaní nasadenia treba definovať stratégiu aktualizácií, telemetriu pre prevádzku, monitorovanie chýb a plán údržby. Pre rozsiahle nasadenia je dôležité mať mechanizmy pre hromadný provisioning zariadení a bezpečný lifecycle management.
 
 \subsection{Zhrnutie}
-Tento rozšírený prehľad pokrýva najdôležitejšie rozhodnutia, ktoré treba spraviť pri návrhu vstavaného IoT zariadenia. V praktických kapitolách sa zameriame na konkrétne návrhy pre ESP32 a postupy v MicroPythone.
+Táto kapitola poskytuje podrobný technologický a procesný rámec pre návrh, verifikáciu a prevádzku vstavaných IoT systémov. Nasledujúce kapitoly aplikujú tieto princípy v konkrétnych implementáciách na platforme ESP32 a v prostredí MicroPython.
+
